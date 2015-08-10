@@ -11,6 +11,8 @@
         android:layout_weight="0.68"
         android:transcriptMode="alwaysScroll"
         android:cacheColorHint="#00000000"
+        android:dividerHeight="0dp"
+        android:divider="@null"
         />
 
 

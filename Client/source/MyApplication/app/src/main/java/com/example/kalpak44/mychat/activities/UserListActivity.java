@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.kalpak44.mychat.R;
 import com.example.kalpak44.mychat.models.User;
@@ -42,9 +43,9 @@ public class UserListActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
                 User userClicked = userList.get(position);
                 String message = "Position "+position;
-                //Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getApplicationContext(), MessageRoomActivity.class);
-                startActivity(intent);
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                //Intent intent = new Intent(getApplicationContext(), MessageRoomActivity.class);
+                startActivity(new Intent(getApplicationContext(),MessageRoomActivity.class));
             }
         });
     }
@@ -87,7 +88,7 @@ public class UserListActivity extends Activity {
 
             //userTextView
             TextView userTextView = (TextView) itemView.findViewById(R.id.userTextView);
-            userTextView.setText(currentUser.getUsername()+"    ("+currentUser.getCount_msg()+" new messages. )");
+            userTextView.setText(currentUser.getUsername());
 
             return itemView;
         }

@@ -79,33 +79,41 @@ public class MyService extends Service {
                 }if(task.equals(Constants.PARAM_AUTH)){
                     Log.i(Constants.LOG_TAG,getMessage());
                     Log.i(Constants.LOG_TAG, task);
-                    sendMessage(Constants.PARAM_AUTH);
+                    sendMessage(task);
                     Log.i(Constants.LOG_TAG, getMessage());
                     JSONObject user = new JSONObject();
 
                     user.putOpt(Constants.USERNAME, intent.getStringExtra(Constants.USERNAME));
                     user.putOpt(Constants.PASSWORD, intent.getStringExtra(Constants.PASSWORD));
-                    String userJSONData = user.toString();
+                    sendMessage(user.toString());
 
-                    sendMessage(userJSONData);
                     String authStatus = getMessage();
                     Log.i(Constants.LOG_TAG, "TCP MSG " + authStatus);
                     Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
-                    if(authStatus.equals(Constants.SERVER_STATUS_AUTH_SUCCESS)){
-                        resultIntent.putExtra(Constants.PARAM_AUTH_RESULT, Constants.STATUS_SUCCESS);
-                    }else{
-                        resultIntent.putExtra(Constants.PARAM_AUTH_RESULT, Constants.STATUS_FAIL);
-                    }
+                    resultIntent.putExtra(Constants.PARAM_AUTH_RESULT, authStatus);
                     sendBroadcast(resultIntent);
+                }if(task.equals(Constants.PARAM_REG)){
+                    Log.i(Constants.LOG_TAG,getMessage());
+                    Log.i(Constants.LOG_TAG, task);
+                    sendMessage(task);
+                    JSONObject user = new JSONObject();
+                    user.putOpt(Constants.USERNAME, intent.getStringExtra(Constants.USERNAME));
+                    user.putOpt(Constants.PASSWORD, intent.getStringExtra(Constants.PASSWORD));
+                    user.putOpt("avatar", "");
 
-
-
+                    Log.i(Constants.LOG_TAG, getMessage());
+                    sendMessage(user.toString());
+                    String regStatus = getMessage();
+                    Log.i(Constants.LOG_TAG, regStatus);
+                    Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
+                    resultIntent.putExtra(Constants.PARAM_REG_RESULT, regStatus);
+                    sendBroadcast(resultIntent);
                 }
 
 
                 //checkProfile(intent.getStringExtra("username"), intent.getStringExtra("password"));
 
-                TimeUnit.SECONDS.sleep(20);
+                TimeUnit.SECONDS.sleep(25);
 
 
 

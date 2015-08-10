@@ -10,53 +10,106 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.kalpak44.mychat.R;
 import com.example.kalpak44.mychat.constants.Constants;
+import com.example.kalpak44.mychat.constants.Strings;
 import com.example.kalpak44.mychat.utils.MyService;
 
 /**
  * Created by kalpak44 on 15-7-29.
  */
 public class RegistrationActivity extends Activity {
-    BroadcastReceiver br;
+    BroadcastReceiver br3;
+    EditText username;
+    EditText password1;
+    EditText password2;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.registration_layout);
+        username = (EditText)findViewById(R.id.username);
+        password1 = (EditText)findViewById(R.id.password1);
+        password2 = (EditText)findViewById(R.id.password2);
+
+        username.setText("user");
+        password1.setText("12345");
+        password2.setText("12345");
 
 
-/*
-        br = new BroadcastReceiver(){
+
+
+        br3 = new BroadcastReceiver(){
             @Override
             public void onReceive(Context context, Intent intent) {
-                String status = intent.getStringExtra(Constants.PARAM_STATUS);
-                Log.i(Constants.LOG_TAG, "onReceive: status = " + status);
+                String status = intent.getStringExtra(Constants.PARAM_REG_RESULT);
+
+                if(status != null){
+                    Log.i(Constants.LOG_TAG, "onReceive auth: status = " + status);
+                    if(status.equals(Constants.SERVER_STATUS_REG_SUCCESS)){
+                        //textViewInvalidData.setText("");
+                        unregisterReceiver(br3);
+                        startActivity(new Intent(getApplicationContext(),UserListActivity.class));
+                    }else{
+                        Toast.makeText(getApplicationContext(), Strings.REG_FAIL, Toast.LENGTH_SHORT).show();
+                    }
+                }else{
+                    try {
+                        if (br3 != null) {
+                            unregisterReceiver(br3);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        br3 = null;
+                    }
+                }
+
             }
         };
 
-        // создаем фильтр для BroadcastReceiver
-        IntentFilter intFilt = new IntentFilter(Constants.BROADCAST_ACTION);
         // регистрируем (включаем) BroadcastReceiver
-        registerReceiver(br, intFilt);
-        */
+        registerReceiver(br3, new IntentFilter(Constants.BROADCAST_ACTION));
+
     }
 
 
     public void onClickRegister(View view){
-        Intent intent = new Intent(getApplicationContext(), MyService.class)
-                .putExtra(Constants.PARAM_TASK, "reg")
-                .putExtra("username", "admin")
-                .putExtra("password", "admin");
-        // стартуем сервис
-        startService(intent);
 
+        String user, pass1, pass2;
+        user  = username.getText().toString();
+        pass1 = password1.getText().toString();
+        pass2 = password2.getText().toString();
+        if(pass1.equals(pass2)){
+            Intent intent = new Intent(getApplicationContext(), MyService.class)
+                    .putExtra(Constants.PARAM_TASK, Constants.PARAM_REG)
+                    .putExtra(Constants.USERNAME, user)
+                    .putExtra(Constants.PASSWORD, pass1);
+            // стартуем сервис
+            startService(intent);
+        }else{
+            Toast.makeText(getApplicationContext(), Strings.PASS_MIS, Toast.LENGTH_LONG).show();
+        }
 
-        //Intent intent = new Intent(this, UserListActivity.class);
-        //startActivity(intent);
     }
 
+    @Override
+    protected void onPause() {
+        Log.i(Constants.LOG_TAG, "onPause: param unregister BroadcastReceivers");
 
+        try {
+            if (br3 != null) {
+                Log.i(Constants.LOG_TAG, "onPause: unregister b3");
+                unregisterReceiver(br3);
+            }
+        } catch (IllegalArgumentException e) {
+            br3 = null;
+        }
+
+        super.onPause();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

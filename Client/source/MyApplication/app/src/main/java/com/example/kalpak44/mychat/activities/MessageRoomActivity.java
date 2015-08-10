@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.DataSetObserver;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -109,7 +110,7 @@ public class MessageRoomActivity extends Activity {
 
 
     private class ChatArrayAdapter extends ArrayAdapter<Message>{
-        private TextView msgListItemText;
+        private TextView msgText;
         private List<Message> MessageList = new ArrayList<Message>();
         private LinearLayout layout;
 
@@ -140,14 +141,18 @@ public class MessageRoomActivity extends Activity {
                 v = inflater.inflate(R.layout.item_message_view,parent,false);
 
             }
-            //layout = (LinearLayout) v.findViewById(R.id.Message1);
+            layout = (LinearLayout) v.findViewById(R.id.Message1);
             Message message = getItem(position);
-            msgListItemText = (TextView) v.findViewById(R.id.msgListItemText);
-            msgListItemText.setText(message.getMessage() + (message.getLeft() ? " left" : " right"));
-            msgListItemText.setGravity(message.getLeft()? Gravity.LEFT:Gravity.RIGHT);
+            msgText = (TextView) v.findViewById(R.id.msgText);
+            msgText.setText(message.getMessage());
+            msgText.setGravity(message.getLeft()? Gravity.LEFT:Gravity.RIGHT);
+            //layout.setGravity(message.getLeft()? Gravity.LEFT:Gravity.RIGHT);
             //msgListItemText.setGravity(Gravity.RIGHT);
             //layout.setGravity(message.getLeft()? Gravity.LEFT:Gravity.RIGHT);
             //msgTextEdit.setBackgroundColor(Color.GRAY);
+            ((LinearLayout.LayoutParams) layout.getLayoutParams()).gravity = message.getLeft()? Gravity.LEFT:Gravity.RIGHT;
+            layout.setBackgroundColor(message.getLeft()?Color.BLUE:Color.GRAY);
+
 
             return v;
 

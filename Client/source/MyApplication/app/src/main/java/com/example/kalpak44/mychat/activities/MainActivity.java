@@ -97,46 +97,60 @@ public class MainActivity extends Activity {
             public void onReceive(Context context, Intent intent) {
 
                 String conn_status = intent.getStringExtra(Constants.PARAM_CONNECTION_RESULT);
-                Log.i(Constants.LOG_TAG, "onReceive1: param = " + Constants.PARAM_CONNECT);
+                Log.i(Constants.LOG_TAG, "onReceive conn: param = " + Constants.PARAM_CONNECT);
 
 
-                if (conn_status.equals(Constants.STATUS_SUCCESS)){
-                    Log.i(Constants.LOG_TAG, "enable controls");
-                    textViewInvalidData.setText("");
-                    loginButton.setEnabled(true);
-                    goToRegButton.setEnabled(true);
+                if (conn_status != null) {
+                    if (conn_status.equals(Constants.STATUS_SUCCESS)) {
+                        Log.i(Constants.LOG_TAG, "enable controls");
+                        textViewInvalidData.setText("");
+                        loginButton.setEnabled(true);
+                        goToRegButton.setEnabled(true);
 
-                    unregisterReceiver(br1);
+                        unregisterReceiver(br1);
 
 
+                        br2 = new BroadcastReceiver() {
+                            @Override
+                            public void onReceive(Context context, Intent intent) {
+                                String auth_status = intent.getStringExtra(Constants.PARAM_AUTH_RESULT);
 
+                                if (auth_status != null) {
+                                    Log.i(Constants.LOG_TAG, "onReceive auth: status = " + auth_status);
+                                    if (auth_status.equals(Constants.SERVER_STATUS_AUTH_SUCCESS)) {
+                                        //textViewInvalidData.setText("");
+                                        startActivity(new Intent(getApplicationContext(), UserListActivity.class));
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), Strings.AUTH_FAIL, Toast.LENGTH_SHORT).show();
+                                    }
+                                } else {
+                                    try {
+                                        if (br2 != null) {
+                                            unregisterReceiver(br2);
+                                        }
+                                    } catch (IllegalArgumentException e) {
+                                        br2 = null;
+                                    }
+                                }
 
-                    br2 = new BroadcastReceiver(){
-                        @Override
-                        public void onReceive(Context context, Intent intent) {
-                            String status = intent.getStringExtra(Constants.PARAM_AUTH_RESULT);
-                            Log.i(Constants.LOG_TAG, "onReceive2: status = " + status);
-
-                            if(status.equals(Constants.STATUS_SUCCESS)){
-                                //textViewInvalidData.setText("");
-                                startActivity(new Intent(getApplicationContext(),UserListActivity.class));
-                            }if(status.equals(Constants.STATUS_FAIL)){
-                                Toast.makeText(getApplicationContext(), Strings.AUTH_FAIL, Toast.LENGTH_SHORT).show();
                             }
-                            unregisterReceiver(br2);
+                        };
+
+                        // регистрируем (включаем) BroadcastReceiver
+                        registerReceiver(br2, new IntentFilter(Constants.BROADCAST_ACTION));
+
+
+                    } else {
+                        textViewInvalidData.setText(conn_status);
+                    }
+                }else{
+                    try {
+                        if (br1 != null) {
+                            unregisterReceiver(br1);
                         }
-                    };
-
-                    // регистрируем (включаем) BroadcastReceiver
-                    registerReceiver(br2, new IntentFilter(Constants.BROADCAST_ACTION));
-
-
-
-
-
-
-                }else {
-                    textViewInvalidData.setText(conn_status);
+                    } catch (IllegalArgumentException e) {
+                        br1 = null;
+                    }
                 }
             }
         };
@@ -158,9 +172,11 @@ public class MainActivity extends Activity {
 
         try {
             if (br1 != null) {
+                Log.i(Constants.LOG_TAG, "onPause: unregister b1");
                 unregisterReceiver(br1);
             }
             if (br2 != null) {
+                Log.i(Constants.LOG_TAG, "onPause: unregister b2");
                 unregisterReceiver(br2);
             }
         } catch (IllegalArgumentException e) {
