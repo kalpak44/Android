@@ -27,7 +27,7 @@ public class RegistrationActivity extends Activity {
 
 
 
-
+/*
         startService(new Intent(getApplicationContext(), MyService.class));
 
 
@@ -43,6 +43,7 @@ public class RegistrationActivity extends Activity {
         IntentFilter intFilt = new IntentFilter(Constants.BROADCAST_ACTION);
         // регистрируем (включаем) BroadcastReceiver
         registerReceiver(br, intFilt);
+        */
     }
 
 

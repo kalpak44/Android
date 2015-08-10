@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -19,9 +18,9 @@ import android.widget.Toast;
 
 import com.example.kalpak44.mychat.constants.Constants;
 import com.example.kalpak44.mychat.constants.Strings;
+import com.example.kalpak44.mychat.utils.Client;
 import com.example.kalpak44.mychat.utils.MyService;
 import com.example.kalpak44.mychat.R;
-import com.example.kalpak44.mychat.utils.Client;
 
 
 public class MainActivity extends Activity {
@@ -30,7 +29,7 @@ public class MainActivity extends Activity {
     private EditText editUsername;
     private EditText editPassword;
     private Button loginButton;
-    private Button registration;
+    private Button regButton;
 
 
 
@@ -46,7 +45,11 @@ public class MainActivity extends Activity {
         textViewInvalidData = (TextView) findViewById(R.id.textViewInvalidData);
         editUsername = (EditText)findViewById(R.id.username);
         editPassword = (EditText)findViewById(R.id.password1);
-        loginButton = (Button)findViewById(R.id.register);
+        loginButton = (Button)findViewById(R.id.loginButton);
+        regButton = (Button)findViewById(R.id.regButton);
+
+        loginButton.setEnabled(false);
+        regButton.setEnabled(false);
 
 
         //for test
@@ -55,24 +58,67 @@ public class MainActivity extends Activity {
 
 
         startService();
-        loadAfterLogInClick();
+        initConnection();
 
-        loginButton.setOnClickListener(new View.OnClickListener() {
+    }
+
+    private void initConnection() {
+        Intent intent = new Intent(getApplicationContext(), MyService.class)
+                .putExtra(Constants.PARAM_TASK, Constants.PARAM_CONNECT);
+        // стартуем сервис
+        startService(intent);
+
+
+
+        br = new BroadcastReceiver(){
             @Override
-            public void onClick(View view) {
-                //textViewInvalidData.setText(Strings.WAIT);
-                String username = editUsername.getText().toString();
-                String password = editPassword.getText().toString();
+            public void onReceive(Context context, Intent intent) {
+                String status = intent.getStringExtra(Constants.PARAM_CONNECTION_RESULT);
+                Log.i(Constants.LOG_TAG, "onReceive: param = " + Constants.PARAM_CONNECT);
+                if (status.equals(Constants.STATUS_SUCCESS)){
+                    Log.i(Constants.LOG_TAG, "enable controls");
+                    textViewInvalidData.setText("");
+                    loginButton.setEnabled(true);
+                    regButton.setEnabled(true);
 
-                Intent intent = new Intent(getApplicationContext(), MyService.class)
-                        .putExtra(Constants.PARAM_TASK, Constants.PARAM_AUTH)
-                        .putExtra(Constants.USERNAME, username)
-                        .putExtra(Constants.PASSWORD, password);
-                // стартуем сервис
-                startService(intent);
+
+
+                    loadAfterLogInClick();
+
+                    loginButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            //textViewInvalidData.setText(Strings.WAIT);
+                            String username = editUsername.getText().toString();
+                            String password = editPassword.getText().toString();
+
+                            Intent intent = new Intent(getApplicationContext(), MyService.class)
+                                    .putExtra(Constants.PARAM_TASK, Constants.PARAM_AUTH)
+                                    .putExtra(Constants.USERNAME, username)
+                                    .putExtra(Constants.PASSWORD, password);
+                            // стартуем сервис
+                            startService(intent);
+                        }
+                    });
+
+
+
+                }else {
+                    textViewInvalidData.setText(status);
+                }
             }
-        });
+        };
 
+
+
+        // создаем фильтр для BroadcastReceiver
+        IntentFilter intFilt = new IntentFilter(Constants.BROADCAST_ACTION);
+        // регистрируем (включаем) BroadcastReceiver
+        registerReceiver(br, intFilt);
+        /*
+
+
+*/
 
     }
 
@@ -95,7 +141,7 @@ public class MainActivity extends Activity {
         br = new BroadcastReceiver(){
             @Override
             public void onReceive(Context context, Intent intent) {
-                String status = intent.getStringExtra(Constants.PARAM_RESULT);
+                String status = intent.getStringExtra(Constants.PARAM_AUTH_RESULT);
                 Log.i(Constants.LOG_TAG, "onReceive: status = " + status);
                 if(status.equals(Constants.STATUS_SUCCESS)){
                     //textViewInvalidData.setText("");

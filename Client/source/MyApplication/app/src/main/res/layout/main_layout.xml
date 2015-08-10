@@ -12,9 +12,10 @@
         android:text="Username"
         android:id="@+id/textView2"
         android:textStyle="bold"
-        android:layout_below="@+id/imageView"
+        android:gravity="center_horizontal"
+        android:layout_below="@+id/textViewInvalidData"
         android:layout_alignEnd="@+id/textView"
-        android:layout_marginTop="56dp" />
+        android:layout_marginTop="74dp" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -53,7 +54,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Log in"
-        android:id="@+id/register"
+        android:id="@+id/loginButton"
         android:layout_below="@+id/password1"
         android:layout_alignParentStart="true"
         android:layout_alignEnd="@+id/password1"
@@ -65,10 +66,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="registration"
-        android:id="@+id/RegisterButton"
-        android:layout_below="@+id/register"
+        android:id="@+id/regButton"
+        android:layout_below="@+id/loginButton"
         android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/register"
+        android:layout_alignEnd="@+id/loginButton"
         android:lines="3"
         android:textStyle="bold"
         android:onClick="goToRegister" />
@@ -96,7 +97,11 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/textViewInvalidData"
         android:layout_below="@+id/imageView"
-        android:layout_centerHorizontal="true"
-        android:textColor="#ffff0000" />
+        android:textColor="#db200000"
+        android:autoText="false"
+        android:text="connecting"
+        android:layout_alignEnd="@+id/username"
+        android:layout_alignParentStart="true"
+        android:gravity="center" />
 
 </RelativeLayout>

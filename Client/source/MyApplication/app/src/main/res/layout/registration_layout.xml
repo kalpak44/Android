@@ -54,7 +54,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Register"
-        android:id="@+id/register"
+        android:id="@+id/loginButton"
         android:lines="3"
         android:textStyle="bold"
         android:layout_below="@+id/password2"
@@ -69,7 +69,8 @@
         android:text="Please enter login and password to register."
         android:id="@+id/textView3"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal" />
 
     <ImageView
         android:layout_width="wrap_content"

@@ -22,10 +22,13 @@ public class Client implements Runnable {
     private boolean mRun = false;
     private PrintWriter out;
     private BufferedReader in;
+    private String connectionStatus;
 
 
 
-    public Client(){}
+    public Client(){
+        connectionStatus = Constants.NOT_CONNECTED;
+    }
 
     public void stopClient() {
         mRun = false;
@@ -54,11 +57,17 @@ public class Client implements Runnable {
         return serverMessage;
     }
 
+    public String getConnctionStatus(){
+        return connectionStatus;
+    }
+
     public void run(){
 
         mRun = true;
 
         try {
+
+
 
             // here you must put your computer's IP address.
             InetAddress serverAddr = InetAddress.getByName(Config.SERVERIP);
@@ -81,6 +90,7 @@ public class Client implements Runnable {
 
 
 
+                connectionStatus = Constants.STATUS_SUCCESS;
                 /*
                 serverMessage = in.readLine();
                 mMessageListener.messageReceived(serverMessage);
@@ -100,8 +110,7 @@ public class Client implements Runnable {
 
 
             } catch (Exception e) {
-                Log.i(Constants.LOG_TAG, "S: Error", e);
-
+                connectionStatus = e.getMessage();
             } finally {
                 // the socket must be closed. It is not possible to reconnect to
                 // this socket
@@ -111,8 +120,7 @@ public class Client implements Runnable {
             }
 
         } catch (Exception e) {
-            Log.i(Constants.LOG_TAG, "C: Error", e);
-
+            connectionStatus = e.getMessage();
         }
 
     }

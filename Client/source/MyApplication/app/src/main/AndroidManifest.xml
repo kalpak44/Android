@@ -24,10 +24,6 @@
         </activity>
         <activity android:name=".activities.RegistrationActivity" />
         <activity android:name=".activities.UserListActivity" />
-        <activity
-            android:name=".activities.MessageRoomActivity"
-            android:label="@string/title_activity_room_actyvity" >
-        </activity>
         <service android:name=".utils.MyService" />
     </application>
 

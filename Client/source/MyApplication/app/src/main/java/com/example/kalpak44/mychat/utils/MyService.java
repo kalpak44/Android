@@ -7,6 +7,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 
+import com.example.kalpak44.mychat.constants.Config;
 import com.example.kalpak44.mychat.constants.Constants;
 import com.example.kalpak44.mychat.constants.Strings;
 
@@ -26,6 +27,7 @@ public class MyService extends Service {
     public void onCreate() {
         Log.i(Constants.LOG_TAG, "onCreate SERVICE");
         super.onCreate();
+        client = new Client();
         connection();
         Log.i(Constants.LOG_TAG, "onCreate connected to server");
     }
@@ -77,11 +79,25 @@ public class MyService extends Service {
         public void run() {
             try{
 
+
                 Log.i(Constants.LOG_TAG,"myRun");
-                Log.i(Constants.LOG_TAG, getMessage());
-                if(task.equals("reg")){
-                    sendMessage("HELP");
-                    Log.i(Constants.LOG_TAG, getMessage());
+                if(task.equals(Constants.PARAM_CONNECT)){
+                    for(int i = 0;i < Config.CONNECTION_ATTEMPS;i++){
+                        Log.i(Constants.LOG_TAG, "try connection.");
+                        Thread.sleep(Config.CONNECTION_WAIT);
+                        if(client.getConnctionStatus().equals(Constants.STATUS_SUCCESS)){
+
+                            break;
+                        }
+                    }
+                    Log.i(Constants.LOG_TAG, "connection status: " + client.getConnctionStatus());
+                    Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
+                    resultIntent.putExtra(Constants.PARAM_CONNECTION_RESULT, client.getConnctionStatus());
+                    sendBroadcast(resultIntent);
+
+
+
+
                 }if(task.equals(Constants.PARAM_AUTH)){
                     sendMessage(Constants.PARAM_AUTH);
                     Log.i(Constants.LOG_TAG, getMessage());
@@ -96,9 +112,9 @@ public class MyService extends Service {
                     Log.i(Constants.LOG_TAG, "TCP MSG " + authStatus);
                     Intent intent = new Intent(Constants.BROADCAST_ACTION);
                     if(authStatus.equals(Constants.SERVER_STATUS_AUTH_SUCCESS)){
-                        intent.putExtra(Constants.PARAM_RESULT, Constants.STATUS_SUCCESS);
+                        intent.putExtra(Constants.PARAM_AUTH_RESULT, Constants.STATUS_SUCCESS);
                     }else{
-                        intent.putExtra(Constants.PARAM_RESULT, Constants.STATUS_FAIL);
+                        intent.putExtra(Constants.PARAM_AUTH_RESULT, Constants.STATUS_FAIL);
                     }
                     sendBroadcast(intent);
 
@@ -109,7 +125,7 @@ public class MyService extends Service {
 
                 //checkProfile(intent.getStringExtra("username"), intent.getStringExtra("password"));
 
-                TimeUnit.SECONDS.sleep(15);
+                TimeUnit.SECONDS.sleep(20);
 
 
 
@@ -118,7 +134,7 @@ public class MyService extends Service {
                 stop();
 
             }catch (Exception e){
-                Log.i(Constants.LOG_TAG,"MYRUN Exception");
+                Log.i(Constants.LOG_TAG, "MYRUN Exception " + e.getMessage());
             }
         }
 
@@ -131,7 +147,6 @@ public class MyService extends Service {
 
 
     public void connection(){
-        client = new Client();
         new Thread(client).start();
     }
 

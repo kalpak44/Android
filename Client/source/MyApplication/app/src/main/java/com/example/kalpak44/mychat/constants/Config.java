@@ -6,4 +6,7 @@ package com.example.kalpak44.mychat.constants;
 public class Config {
     public static final String SERVERIP = "192.168.1.3"; // your computer IP
     public static final int SERVERPORT = 2222;
+
+    public static final int CONNECTION_ATTEMPS = 4;
+    public static final int CONNECTION_WAIT = 2000;
 }
