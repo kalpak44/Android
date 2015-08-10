@@ -66,13 +66,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="registration"
-        android:id="@+id/regButton"
-        android:layout_below="@+id/loginButton"
-        android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/loginButton"
+        android:id="@+id/goToRegButton"
         android:lines="3"
         android:textStyle="bold"
-        android:onClick="goToRegister" />
+        android:onClick="goToRegister"
+        android:layout_below="@+id/loginButton"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/loginButton" />
 
     <TextView
         android:layout_width="wrap_content"

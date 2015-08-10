@@ -60,7 +60,7 @@
         android:layout_below="@+id/password2"
         android:layout_alignParentStart="true"
         android:layout_alignEnd="@+id/password2"
-        android:onClick="goToHome" />
+        android:onClick="onClickRegister" />
 
     <TextView
         android:layout_width="wrap_content"

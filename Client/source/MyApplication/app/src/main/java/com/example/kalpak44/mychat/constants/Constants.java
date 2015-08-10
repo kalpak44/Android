@@ -19,6 +19,6 @@ public class Constants {
     public final static String LOCAL_STATUS_AUTH_FAIL = "FAIL";
     public final static String PARAM_CONNECT = "connection";
     public final static String PARAM_CONNECTION_RESULT = "connection result";
-    public final static String NOT_CONNECTED = "Not connected";
+    public final static String NOT_CONNECTED = "not connected";
 
 }

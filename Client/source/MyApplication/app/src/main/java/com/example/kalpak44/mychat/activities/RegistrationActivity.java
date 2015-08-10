@@ -26,11 +26,7 @@ public class RegistrationActivity extends Activity {
         setContentView(R.layout.registration_layout);
 
 
-
 /*
-        startService(new Intent(getApplicationContext(), MyService.class));
-
-
         br = new BroadcastReceiver(){
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -47,7 +43,7 @@ public class RegistrationActivity extends Activity {
     }
 
 
-    public void goToHome(View view){
+    public void onClickRegister(View view){
         Intent intent = new Intent(getApplicationContext(), MyService.class)
                 .putExtra(Constants.PARAM_TASK, "reg")
                 .putExtra("username", "admin")
@@ -59,7 +55,6 @@ public class RegistrationActivity extends Activity {
         //Intent intent = new Intent(this, UserListActivity.class);
         //startActivity(intent);
     }
-
 
 
 

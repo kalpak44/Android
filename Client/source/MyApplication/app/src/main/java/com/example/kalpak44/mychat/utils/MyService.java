@@ -27,7 +27,6 @@ public class MyService extends Service {
     public void onCreate() {
         Log.i(Constants.LOG_TAG, "onCreate SERVICE");
         super.onCreate();
-        client = new Client();
         connection();
         Log.i(Constants.LOG_TAG, "onCreate connected to server");
     }
@@ -54,17 +53,6 @@ public class MyService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-
-
-
-
-
-
-
-
-
-
-
     public class MyRun implements Runnable{
         int startId;
         String task;
@@ -82,23 +70,15 @@ public class MyService extends Service {
 
                 Log.i(Constants.LOG_TAG,"myRun");
                 if(task.equals(Constants.PARAM_CONNECT)){
-                    for(int i = 0;i < Config.CONNECTION_ATTEMPS;i++){
-                        Log.i(Constants.LOG_TAG, "try connection.");
-                        Thread.sleep(Config.CONNECTION_WAIT);
-                        if(client.getConnctionStatus().equals(Constants.STATUS_SUCCESS)){
-
-                            break;
-                        }
-                    }
+                    Thread.sleep(Config.CONNECTION_WAIT);
                     Log.i(Constants.LOG_TAG, "connection status: " + client.getConnctionStatus());
                     Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
                     resultIntent.putExtra(Constants.PARAM_CONNECTION_RESULT, client.getConnctionStatus());
                     sendBroadcast(resultIntent);
 
-
-
-
                 }if(task.equals(Constants.PARAM_AUTH)){
+                    Log.i(Constants.LOG_TAG,getMessage());
+                    Log.i(Constants.LOG_TAG, task);
                     sendMessage(Constants.PARAM_AUTH);
                     Log.i(Constants.LOG_TAG, getMessage());
                     JSONObject user = new JSONObject();
@@ -110,13 +90,13 @@ public class MyService extends Service {
                     sendMessage(userJSONData);
                     String authStatus = getMessage();
                     Log.i(Constants.LOG_TAG, "TCP MSG " + authStatus);
-                    Intent intent = new Intent(Constants.BROADCAST_ACTION);
+                    Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
                     if(authStatus.equals(Constants.SERVER_STATUS_AUTH_SUCCESS)){
-                        intent.putExtra(Constants.PARAM_AUTH_RESULT, Constants.STATUS_SUCCESS);
+                        resultIntent.putExtra(Constants.PARAM_AUTH_RESULT, Constants.STATUS_SUCCESS);
                     }else{
-                        intent.putExtra(Constants.PARAM_AUTH_RESULT, Constants.STATUS_FAIL);
+                        resultIntent.putExtra(Constants.PARAM_AUTH_RESULT, Constants.STATUS_FAIL);
                     }
-                    sendBroadcast(intent);
+                    sendBroadcast(resultIntent);
 
 
 
@@ -147,6 +127,7 @@ public class MyService extends Service {
 
 
     public void connection(){
+        client = new Client();
         new Thread(client).start();
     }
 
