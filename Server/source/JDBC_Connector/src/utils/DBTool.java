@@ -1,40 +1,26 @@
+package utils;
 import java.sql.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import strings.Config;
+
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.io.*;
-import java.util.Properties;
 
 
-
-
-public class DBConnector {
-	// JDBC driver name and database URL
-	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver"; 
-	static final String DB_URL = "jdbc:mysql://localhost:3306/mychat";
+public class DBTool {
+	private static Connection conn = null;
+	private static Statement stmt = null;
+	private static ResultSet rs = null;
 	
-	//  Database credentials
-	static final String USER = "root";
-	static final String PASS = "powermedoed13";
-	
-	
-	private Connection conn = null;
-	private Statement stmt = null;
-	private ResultSet rs = null;
-	
-	public DBConnector(){
-	
+	public DBTool(){
 		try{
 			// Register JDBC driver
-			Class.forName(JDBC_DRIVER);
-			
-			System.out.println("Connecting to a selected database...");
-			conn  = DriverManager.getConnection(DB_URL,USER,PASS);
-			System.out.println("Connected database successfully...");
-			
+			Class.forName(Config.JDBC_DRIVER);
+			conn  = DriverManager.getConnection(Config.DB_URL,Config.USER,Config.PASS);			
 		}catch(Exception ex){
 			System.out.println(ex);
 		}
@@ -42,53 +28,33 @@ public class DBConnector {
 	
 	
 	
-	public void seeData(){
+	// Get password by username method
+	
+	public String getPass(String username){
 		try{
 			// Execute a query
-			System.out.println("Creating statement...");
-			stmt = conn.createStatement();
+
+			stmt = conn.createStatement();			
+			String sql = "select password from clients where username = ?";
 			
-			String sql = "select * from clients";
-			rs = stmt.executeQuery(sql);
-			
-			// Display values
-			while(rs.next()){
-				String username = rs.getString("username");
-				System.out.println("username: "+username);
-				
-				String password = rs.getString("password");
-				System.out.println("password: "+password);
-			}
+			PreparedStatement preparedStatement = null;
+			preparedStatement = conn.prepareStatement(sql);
+			preparedStatement.setString(1, username);
+			rs = preparedStatement.executeQuery();
+			rs.next();
+			return rs.getString("password");
+
 		}catch(Exception ex){
-			ex.printStackTrace();
+			System.out.println("exept get pass by username method");
 		}
+		return null;
 		      
 	}
 	
-	public String getPasswordByUsername(String username){
-		String result = null;
-		try{
-			// Execute a query
-			System.out.println("Creating statement (getPasswordByUsername)...");
-			stmt = conn.createStatement();
-			
-			String sql = "select * from clients";
-			rs = stmt.executeQuery(sql);
-			
-			// Display values
-			while(rs.next()){
-				String user = rs.getString("username");
-				if(user.equals(username)){
-					result = rs.getString("password");
-					break;
-				}
-			}
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-		return result;
-		      
-	}
+	
+	
+	
+	
 	
 	public boolean  createNewClient(JSONObject client){
 		try{
@@ -99,25 +65,21 @@ public class DBConnector {
 			String password = (String) client.get("password");
 			String avatar   = (String) client.get("avatar");
 			
-			System.out.println("checking client in database...");
-			if(this.getPasswordByUsername(username)!=null){
+			if(this.getPass(username)!=null){
 				return false;
 			}
-			System.out.println("Creating PreparedStatement...");
+
 			String sql = "INSERT INTO clients"
 					+ "(username, password, avatar) VALUES"
 					+ "(?,?,?)";
 			PreparedStatement preparedStatement = null;
 			preparedStatement = conn.prepareStatement(sql);
 			
-
 			preparedStatement.setString(1, username);
 			preparedStatement.setString(2, password);
 			preparedStatement.setString(3, avatar);
 			
-			System.out.println("execute insert SQL stetement...");
 			preparedStatement.executeUpdate();
-			System.out.println("client was added.");
 			
 			if (preparedStatement != null) {
 				preparedStatement.close();
@@ -218,6 +180,7 @@ public class DBConnector {
 		try{
 			System.out.println("Creating statement (sendMsg)...");
 			stmt = conn.createStatement();
+			System.out.println(msgText);
 
 			System.out.println("Creating PreparedStatement...");
 			String sql = "insert into `messages` (`from`, `to`, `message`, `date_time`) values (?, ?, ?, ?)";

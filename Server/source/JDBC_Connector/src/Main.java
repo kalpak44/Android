@@ -5,6 +5,10 @@ import java.net.ServerSocket;
 
 import org.json.simple.JSONObject;
 
+import strings.Config;
+
+
+
 
 
 
@@ -13,10 +17,10 @@ public class Main {
 	  private static ServerSocket serverSocket = null;
 	  // The client socket.
 	  private static Socket clientSocket = null;
+	  
+	  private static final clientThread[] threads = new clientThread[Config.maxClientsCount];
 
-	  // This chat server can accept up to maxClientsCount clients' connections.
-	  private static final int maxClientsCount = 100;
-	  private static final clientThread[] threads = new clientThread[maxClientsCount];
+	  
 
 	  
 	  
@@ -24,21 +28,6 @@ public class Main {
 	  
 	  
 	public static void main(String[] args) {
-		//generator auth json 
-	      JSONObject gen  =new JSONObject();
-	      gen.put("username","kalpak44");
-	      gen.put("password","kalpak44");
-	      System.out.println(gen.toJSONString());
-	      
-	      
-//	      MessageBox mbox = new MessageBox();
-//	      mbox.addMsg("vasq", "hello","14.06.2015 11:30");
-//	      mbox.addMsg("kolq", "hello","14.06.2015 11:30");
-//	      mbox.addMsg("vasq", "hoho", "14.06.2015 11:30");;
-//	      
-//	      System.out.println(mbox.toJsonObject());
-	      
-	      
 		
 		// The default port number.
 	    int portNumber = 2222;
@@ -49,6 +38,8 @@ public class Main {
 	      portNumber = Integer.valueOf(args[0]).intValue();
 	    }
 
+
+	    
 	    /*
 	     * Open a server socket on the portNumber (default 2222). Note that we can
 	     * not choose a port less than 1023 if we are not privileged users (root).
@@ -69,13 +60,13 @@ public class Main {
 	      try {
 	        clientSocket = serverSocket.accept();
 	        int i = 0;
-	        for (i = 0; i < maxClientsCount; i++) {
+	        for (i = 0; i < Config.maxClientsCount; i++) {
 	          if (threads[i] == null) {
 	            (threads[i] = new clientThread(clientSocket, threads)).start();
 	            break;
 	          }
 	        }
-	        if (i == maxClientsCount) {
+	        if (i == Config.maxClientsCount) {
 	          PrintStream os = new PrintStream(clientSocket.getOutputStream());
 	          os.println("Server too busy. Try later.");
 	          os.close();
@@ -85,6 +76,8 @@ public class Main {
 	        System.out.println(e);
 	      }
 	    }
+	    
+
 
 
 

@@ -1,29 +1,116 @@
 import java.io.DataInputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-// For every client's connection we call this class
-public class clientThread extends Thread{
-  private String username = null;
+import strings.Constants;
+import strings.Strings;
+import utils.DBTool;
 
-  private DataInputStream is = null;
-  private PrintStream os = null;
-  private Socket clientSocket = null;
+	// For every client's connection we call this class
+	public class clientThread extends Thread{
+	private String username = null;
+	
+	private DataInputStream is = null;
+	private PrintStream os = null;
+	private Socket clientSocket = null;
+	
+	private final clientThread[] threads;
+	private int maxClientsCount;
+	  
+	DBTool dbtools = null;
+	
+	  //Constructor
+	public clientThread(Socket clientSocket, clientThread[] threads) {
+		this.clientSocket = clientSocket;
+		this.threads = threads;
+		maxClientsCount = threads.length;
+	}
+	  
+	  
+	public enum AuthTypes {
+	      AUTH, REG, EXIT, HELP;
+	}
+	  
   
-  private final clientThread[] threads;
-  private int maxClientsCount;
   
-  DBConnector dbtools = null;
+  
+  
+private void authMenu() {
+	try {
+	os.println(Constants.CONNECTION_SUCCESSFULL);
+	    switch( AuthTypes.valueOf(is.readLine().toUpperCase())) {
+		    case EXIT:
+		        System.out.println( "exit" );
+		        is.close();
+	  	      	os.close();
+	  	      	clientSocket.close();
+		        break;
+		    case AUTH:
+		        System.out.println( "auth" );
+		        os.println(Constants.IData);
 
-  public clientThread(Socket clientSocket, clientThread[] threads) {
-    this.clientSocket = clientSocket;
-    this.threads = threads;
-    maxClientsCount = threads.length;
-  }
+		        try{
+		        	JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
+		        	String inputUser = (String) inputJSON.get(Constants.USERNAME);
+		        	String inputPass = (String) inputJSON.get(Constants.PASSWORD);
+		        		  	          
+		        	if(dbtools.getPass(inputUser).equals(inputPass)){
+		        		this.username = inputUser;
+		        		System.out.println(username + " logged");
+		        		os.println(Constants.ASuccess);
+		        	}else{
+		        		os.println(Constants.AFail);
+		        		authMenu();
+		        	}
+		        }catch(Exception e){
+		        	os.println(Constants.AFail);
+		        	authMenu();
+		        };
+
+		        break;
+		    case REG:
+		        System.out.println( "reg" );
+		        try{
+      	    	  os.println(Constants.IData);
+      	          @SuppressWarnings("deprecation")
+					JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
+      	          
+      	    	  if(dbtools.createNewClient(inputJSON)){
+      	    		  System.out.println(username + " registrated");
+      	              os.println(Constants.RSuccess);
+      	    	  }else{
+      	    		  os.println(Constants.RFail);
+      	    		  authMenu();
+      	    		authMenu();
+      	    	  }
+          	  }catch(Exception e){
+          		  os.println(Constants.AFail);
+          		  authMenu();
+          	  }
+		        break;
+		    case HELP:
+		        System.out.println( "help" );
+		        os.println(Constants.HELP);
+		        authMenu();
+		        break;
+	    }
+	}catch(Exception e){
+		authMenu();
+	}
+}
+
+
+  
+  
+  
+  
+  
+  
+  
+  
 
   public void run() {
     int maxClientsCount = this.maxClientsCount;
@@ -36,14 +123,18 @@ public class clientThread extends Thread{
       is = new DataInputStream(clientSocket.getInputStream());
       os = new PrintStream(clientSocket.getOutputStream());
       
-      dbtools = new DBConnector();
+      dbtools = new DBTool();
       
+      
+      
+      authMenu();
+      
+      /*
      
       
       while(true){
     	  os.println("+CONNECTION SUCCESSFULLY (HELP - available operations)");
-    	  @SuppressWarnings("deprecation")
-		String action = is.readLine();
+    	  String action = is.readLine();
     	  if(action.equals("EXIT")){
     		  is.close();
     	      os.close();
@@ -62,13 +153,13 @@ public class clientThread extends Thread{
             	  try{
         	    	  os.println("INPUT AUTH DATA:");
         	          @SuppressWarnings("deprecation")
-					JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
+					  JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
         	          String inputUser = (String) inputJSON.get("username");
         	          String inputPass = (String) inputJSON.get("password");
         	          
         	          
         	          
-        	    	  if(dbtools.getPasswordByUsername(inputUser).equals(inputPass)){
+        	    	  if(dbtools.getPass(inputUser).equals(inputPass)){
         	    		  this.username = inputUser;
         	    		  System.out.println(username + " logged successfully");
         	              os.println("+AUTH SUCCESS");
@@ -85,7 +176,7 @@ public class clientThread extends Thread{
               
           }
     	  if(action.equals("REG")){
-        	  dbtools = new DBConnector();
+        	  dbtools = new DBTool();
 
             	  try{
         	    	  os.println("INPUT AUTH DATA:");
@@ -130,7 +221,7 @@ public class clientThread extends Thread{
     	      }
     	  }
     	  if(action.equals("SENDMSG")){
-    		  while(true){
+
             	  try{
         	    	  os.println("INPUT SEND DATA:");
         	          @SuppressWarnings("deprecation")
@@ -140,16 +231,14 @@ public class clientThread extends Thread{
         	          
         	          if(!to.equals(null) || !msgText.equals(null)){
         	        	  dbtools.sendMsg(username, to, msgText);
-            	          break;
+        	        	  os.println("+SENDING SUCCESS");
         	          }else{
-        	        	  
+        	        	  os.println("-SENDING FAILED");
         	          }      	          
 
             	  }catch(Exception e){
             		  os.println("-SENDING FAILED");
             	  }
-              }
-              os.println("+SENDING SUCCESS");
     		  
     	  }
     	  
@@ -164,6 +253,11 @@ public class clientThread extends Thread{
     	  }
     	  
       }
+      
+      
+
+      
+      
       
       
 
@@ -288,4 +382,43 @@ public class clientThread extends Thread{
     	System.out.println(e);
     }
   }
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 }

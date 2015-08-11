@@ -1,6 +1,7 @@
+package utils;
 import java.util.LinkedList;
-
 import org.json.simple.JSONObject;
+import models.Message;
 
 
 public class MessageBox {
