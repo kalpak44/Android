@@ -2,10 +2,8 @@ import java.io.PrintStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.ServerSocket;
-
-import org.json.simple.JSONObject;
-
 import strings.Config;
+import utils.DBTool;
 
 
 
@@ -19,6 +17,7 @@ public class Main {
 	  private static Socket clientSocket = null;
 	  
 	  private static final clientThread[] threads = new clientThread[Config.maxClientsCount];
+
 
 	  
 
@@ -38,8 +37,6 @@ public class Main {
 	      portNumber = Integer.valueOf(args[0]).intValue();
 	    }
 
-
-	    
 	    /*
 	     * Open a server socket on the portNumber (default 2222). Note that we can
 	     * not choose a port less than 1023 if we are not privileged users (root).
@@ -73,12 +70,10 @@ public class Main {
 	          clientSocket.close();
 	        }
 	      } catch (IOException e) {
-	        System.out.println(e);
+	        System.out.println(e.getMessage());
 	      }
 	    }
 	    
-
-
 
 
 	}

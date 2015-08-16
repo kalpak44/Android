@@ -6,7 +6,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import strings.Constants;
-import strings.Strings;
 import utils.DBTool;
 
 	// For every client's connection we call this class
@@ -29,79 +28,154 @@ import utils.DBTool;
 		maxClientsCount = threads.length;
 	}
 	  
-	  
+
+	
+	
 	public enum AuthTypes {
 	      AUTH, REG, EXIT, HELP;
 	}
+		  
 	  
-  
-  
-  
-  
-private void authMenu() {
-	try {
-	os.println(Constants.CONNECTION_SUCCESSFULL);
-	    switch( AuthTypes.valueOf(is.readLine().toUpperCase())) {
-		    case EXIT:
-		        System.out.println( "exit" );
-		        is.close();
-	  	      	os.close();
-	  	      	clientSocket.close();
-		        break;
-		    case AUTH:
-		        System.out.println( "auth" );
-		        os.println(Constants.IData);
-
-		        try{
-		        	JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
-		        	String inputUser = (String) inputJSON.get(Constants.USERNAME);
-		        	String inputPass = (String) inputJSON.get(Constants.PASSWORD);
-		        		  	          
-		        	if(dbtools.getPass(inputUser).equals(inputPass)){
-		        		this.username = inputUser;
-		        		System.out.println(username + " logged");
-		        		os.println(Constants.ASuccess);
-		        	}else{
-		        		os.println(Constants.AFail);
-		        		authMenu();
-		        	}
-		        }catch(Exception e){
-		        	os.println(Constants.AFail);
-		        	authMenu();
-		        };
-
-		        break;
-		    case REG:
-		        System.out.println( "reg" );
-		        try{
-      	    	  os.println(Constants.IData);
-      	          @SuppressWarnings("deprecation")
-					JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
-      	          
-      	    	  if(dbtools.createNewClient(inputJSON)){
-      	    		  System.out.println(username + " registrated");
-      	              os.println(Constants.RSuccess);
-      	    	  }else{
-      	    		  os.println(Constants.RFail);
-      	    		  authMenu();
-      	    		authMenu();
-      	    	  }
-          	  }catch(Exception e){
-          		  os.println(Constants.AFail);
-          		  authMenu();
-          	  }
-		        break;
-		    case HELP:
-		        System.out.println( "help" );
-		        os.println(Constants.HELP);
-		        authMenu();
-		        break;
-	    }
-	}catch(Exception e){
-		authMenu();
+	  
+	  
+	  
+	private void authMenu() {
+		try {
+		os.println(Constants.CONNECTION_SUCCESSFULL);
+		    switch( AuthTypes.valueOf(is.readLine().toUpperCase())) {
+			    case EXIT:
+			        System.out.println( "exit" );
+			        is.close();
+		  	      	os.close();
+		  	      	clientSocket.close();
+			        break;
+			    case AUTH:
+			        System.out.println( "auth" );
+			        os.println(Constants.IData);
+	
+			        try{
+			        	JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
+			        	String inputUser = (String) inputJSON.get(Constants.USERNAME);
+			        	String inputPass = (String) inputJSON.get(Constants.PASSWORD);
+			        		  	          
+			        	if(dbtools.getPass(inputUser).equals(inputPass)){
+			        		this.username = inputUser;
+			        		System.out.println(username + " logged");
+			        		os.println(Constants.ASuccess);
+			        		userMenu();
+			        	}else{
+			        		os.println(Constants.AFail);
+			        		authMenu();
+			        	}
+			        }catch(Exception e){
+			        	os.println(Constants.AFail);
+			        	authMenu();
+			        };
+	
+			        break;
+			    case REG:
+			        System.out.println( "reg" );
+			        try{
+	      	    	  os.println(Constants.IData);
+	      	          @SuppressWarnings("deprecation")
+						JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
+	      	          
+	      	    	  if(dbtools.createNewClient(inputJSON)){
+	      	    		  System.out.println(username + " registrated");
+	      	              os.println(Constants.RSuccess);
+	      	              userMenu();
+	      	    	  }else{
+	      	    		  os.println(Constants.RFail);
+	      	    		  authMenu();
+	      	    		authMenu();
+	      	    	  }
+	          	  }catch(Exception e){
+	          		  os.println(Constants.AFail);
+	          		  authMenu();
+	          	  }
+			        break;
+			    case HELP:
+			        System.out.println( "help" );
+			        os.println(Constants.AHELP);
+			        authMenu();
+			        break;
+		    }
+		}catch(Exception e){
+			authMenu();
+		}
 	}
-}
+	
+	public enum UserMenuTypes1 {
+	      GETMSG, SENDMSG, USERLIST, LOGOUT, EXIT, HELP;
+	}
+	
+	public void userMenu(){
+		try {
+			os.println("Welcome " + username);
+		    switch( UserMenuTypes1.valueOf(is.readLine().toUpperCase())) {
+			    case EXIT:
+			        System.out.println( "exit" );
+			        is.close();
+		  	      	os.close();
+		  	      	clientSocket.close();
+			        break;
+			    case GETMSG:
+			    	try{
+		    			  System.out.println("getmsg");
+		    	    	  os.println(dbtools.getMessagesFor(username).toJSONString());
+		    	    	  userMenu();
+		    	     }catch(Exception e){
+		    	    	  os.println(Constants.NOT_MSG);
+		    	    	  userMenu();
+		    	     } 
+			    break;
+			    case SENDMSG:
+			    	 try{
+			    		 System.out.println("sendmsg");
+	        	    	 os.println(Constants.IData);
+	        	         @SuppressWarnings("deprecation")
+						 JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
+	        	         String to = (String) inputJSON.get(Constants.TO);
+	        	         String msgText = (String) inputJSON.get(Constants.TEXT);
+	        	          
+	        	         if(!to.equals(null) || !msgText.equals(null)){
+	        	        	 dbtools.sendMsg(username, to, msgText);
+	        	        	 os.println(Constants.SEND_S);
+	        	        	 userMenu();
+	        	         }else{
+	        	        	os.println(Constants.SEND_F);
+	        	        	userMenu();
+	        	         }      	          
 
+	            	  }catch(Exception e){
+	            		  os.println(Constants.SEND_F);
+	            		  userMenu();
+	            	  }
+			        break;
+			    case HELP:
+			        System.out.println( "help" );
+			        os.println(Constants.UHELP);
+			        userMenu();
+			        break;
+			case LOGOUT:
+				authMenu();
+				break;
+			case USERLIST:
+				System.out.println("userlist");
+				try{
+	    			 os.println(dbtools.getAllClients().toJSONString());
+	    			 userMenu();
+	    	     }catch(NullPointerException e){
+	    	    	 os.println(Constants.NO_USERS);
+	    	    	 userMenu();
+	    	    	 
+	    	     }
+				break;
+		    }
+			}catch(Exception e){
+				userMenu();
+			}
+	}
 
   
   
@@ -225,7 +299,7 @@ private void authMenu() {
             	  try{
         	    	  os.println("INPUT SEND DATA:");
         	          @SuppressWarnings("deprecation")
-					JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
+					  JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
         	          String to = (String) inputJSON.get("to");
         	          String msgText = (String) inputJSON.get("text");
         	          

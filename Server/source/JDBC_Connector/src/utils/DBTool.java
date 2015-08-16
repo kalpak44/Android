@@ -22,7 +22,7 @@ public class DBTool {
 			Class.forName(Config.JDBC_DRIVER);
 			conn  = DriverManager.getConnection(Config.DB_URL,Config.USER,Config.PASS);			
 		}catch(Exception ex){
-			System.out.println(ex);
+			System.out.println(ex.getMessage());
 		}
 	}
 	
@@ -58,9 +58,7 @@ public class DBTool {
 	
 	public boolean  createNewClient(JSONObject client){
 		try{
-			System.out.println("Creating statement (createNewClient)...");
 			stmt = conn.createStatement();
-			System.out.println("parse input json");
 			String username = (String) client.get("username");
 			String password = (String) client.get("password");
 			String avatar   = (String) client.get("avatar");
@@ -95,19 +93,13 @@ public class DBTool {
 	public JSONObject getMessagesFor(String username){
 		JSONObject result = null;
 		try{
-			System.out.println("Creating statement (MessagesForUser)...");
 			stmt = conn.createStatement();
-			
-			System.out.println("Creating PreparedStatement...");
 			String sql = "select `id`,`from`,`message`, `date_time` from messages where is_readed = 0 and `to` = ?";
 			PreparedStatement preparedStatement = null;
 			preparedStatement = conn.prepareStatement(sql);
 			preparedStatement.setString(1, username);
-			
-			System.out.println("execute select SQL stetement");
-			rs = preparedStatement.executeQuery();
-			System.out.println("get msg for: "+username);
 
+			rs = preparedStatement.executeQuery();
 			MessageBox msgbox = new MessageBox();
 
 			while(rs.next()){
@@ -145,26 +137,34 @@ public class DBTool {
 	    }
 	}
 	
+	
+	
+	
 	@SuppressWarnings("unchecked")
 	public JSONArray getAllClients(){
 		JSONArray result = new JSONArray();
 		try{
-			System.out.println("Creating statement (MessagesForUser)...");
 			stmt = conn.createStatement();
 			
-			System.out.println("Creating PreparedStatement...");
-			String sql = "select `username` from clients";
-			PreparedStatement preparedStatement = null;
-			preparedStatement = conn.prepareStatement(sql);
 			
-			System.out.println("execute select SQL stetement");
+			String sql = "select `username` from clients";
+			String sql1 = "select clients.username, count(messages.id) as messages"
+					+ " from clients left join messages on clients.username = messages.to"
+					+ " where messages.is_readed = 0 group by username";
+			PreparedStatement preparedStatement = null;
+			preparedStatement = conn.prepareStatement(sql1);
+			
+			
 			rs = preparedStatement.executeQuery();
 			
 			
 			result = new JSONArray();
 			while(rs.next()){
 				String username = rs.getString("username");
-				result.add(username);
+				int messages  = rs.getInt("messages");
+				JSONObject json = new JSONObject();
+				json.put(username, messages);
+				result.add(json);
 			}
 			
 			if (preparedStatement != null) {
