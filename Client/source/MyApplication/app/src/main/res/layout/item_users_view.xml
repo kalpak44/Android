@@ -21,4 +21,16 @@
         android:padding="15dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageViewMsg"
+        android:layout_alignBottom="@+id/userTextView"
+        android:layout_toEndOf="@+id/userTextView"
+        android:src="@drawable/msg_icon"
+        android:paddingLeft="5dp"
+        android:paddingTop="15dp"
+        android:paddingRight="15dp"
+        android:paddingBottom="15dp" />
 </RelativeLayout>

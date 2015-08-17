@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.example.kalpak44.mychat.constants.Constants;
 import com.example.kalpak44.mychat.constants.Strings;
+import com.example.kalpak44.mychat.utils.Client;
 import com.example.kalpak44.mychat.utils.MyService;
 import com.example.kalpak44.mychat.R;
 
@@ -29,12 +30,11 @@ public class MainActivity extends Activity {
     private EditText editPassword;
     private Button loginButton;
     private Button goToRegButton;
+    private Menu menu;
 
 
 
-
-
-    BroadcastReceiver br1,br2;
+    BroadcastReceiver br1,br2, br3;
     SharedPreferences sPref;
 
     @Override
@@ -49,6 +49,8 @@ public class MainActivity extends Activity {
 
         loginButton.setEnabled(false);
         goToRegButton.setEnabled(false);
+
+
 
 
 
@@ -119,6 +121,7 @@ public class MainActivity extends Activity {
                                     Log.i(Constants.LOG_TAG, "onReceive auth: status = " + auth_status);
                                     if (auth_status.equals(Constants.SERVER_STATUS_AUTH_SUCCESS)) {
                                         //textViewInvalidData.setText("");
+                                        MyService.is_authorized = true;
                                         startActivity(new Intent(getApplicationContext(), UserListActivity.class));
                                     } else {
                                         Toast.makeText(getApplicationContext(), Strings.AUTH_FAIL, Toast.LENGTH_SHORT).show();
@@ -138,10 +141,15 @@ public class MainActivity extends Activity {
 
                         // регистрируем (включаем) BroadcastReceiver
                         registerReceiver(br2, new IntentFilter(Constants.BROADCAST_ACTION));
+                        Log.i(Constants.LOG_TAG, "onPause: param register br2");
 
 
                     } else {
                         textViewInvalidData.setText(conn_status);
+                        startService( new Intent(getApplicationContext(), MyService.class)
+                                .putExtra(Constants.PARAM_TASK, Constants.PARAM_DISCONNECT));
+                        MenuItem mi = menu.findItem(R.id.action_disconnect);
+                        mi.setTitle("Connect");
                     }
                 }else{
                     try {
@@ -161,6 +169,7 @@ public class MainActivity extends Activity {
         IntentFilter intFilt = new IntentFilter(Constants.BROADCAST_ACTION);
         // регистрируем (включаем) BroadcastReceiver
         registerReceiver(br1, intFilt);
+        Log.i(Constants.LOG_TAG, "onPause: param register br1");
 
     }
 
@@ -179,13 +188,27 @@ public class MainActivity extends Activity {
                 Log.i(Constants.LOG_TAG, "onPause: unregister b2");
                 unregisterReceiver(br2);
             }
+            if (br3 != null) {
+                Log.i(Constants.LOG_TAG, "onPause: unregister b2");
+                unregisterReceiver(br2);
+            }
+
         } catch (IllegalArgumentException e) {
             br1 = null;
             br2 = null;
+            br3 = null;
         }
 
 
         super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        if(MyService.is_authorized == true){
+            Log.i(Constants.LOG_TAG, "onResume");
+        }
+        super.onResume();
     }
 
     public void goToRegister(View view){
@@ -208,6 +231,7 @@ public class MainActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        this.menu = menu;
         return true;
     }
 
@@ -217,11 +241,40 @@ public class MainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        MenuItem mittem = menu.findItem(id);
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Log.i(Constants.LOG_TAG, "menu: settings");
             return true;
         }
+        if (id == R.id.action_disconnect) {
+            String mittemTitle = mittem.getTitle().toString();
+            Log.i(Constants.LOG_TAG, "menu: "+ mittemTitle);
+            if(mittemTitle.equals("Disconnect")){
+                loginButton.setEnabled(false);
+                goToRegButton.setEnabled(false);
+
+                Intent intent = new Intent(getApplicationContext(), MyService.class)
+                        .putExtra(Constants.PARAM_TASK, Constants.PARAM_DISCONNECT);
+                // стартуем сервис
+                startService(intent);
+
+
+
+                mittem.setTitle("Connect");
+
+
+            }if (mittemTitle.equals("Connect")){
+                mittem.setTitle("Disconnect");
+                Intent intent = getIntent();
+                finish();
+                startActivity(intent);
+
+            }
+            return true;
+        }
+
 
         return super.onOptionsItemSelected(item);
     }

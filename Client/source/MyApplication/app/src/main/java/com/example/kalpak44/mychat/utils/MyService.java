@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class MyService extends Service {
     Client client;
+    public static boolean is_authorized = false;
 
     @Override
     public void onCreate() {
@@ -40,7 +41,7 @@ public class MyService extends Service {
             new Thread(mr).start();
         }
 
-        return START_REDELIVER_INTENT;
+        return START_STICKY;
     }
 
     @Override
@@ -108,18 +109,23 @@ public class MyService extends Service {
                     Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
                     resultIntent.putExtra(Constants.PARAM_REG_RESULT, regStatus);
                     sendBroadcast(resultIntent);
+                }if (task.equals(Constants.PARAM_DISCONNECT)){
+                    stop();
+                }if (task.equals(Constants.PARAM_LOGOUT)){
+                    sendMessage(Constants.PARAM_LOGOUT);
+                    Log.i(Constants.LOG_TAG, "TCP MSG " + getMessage());
                 }
 
 
                 //checkProfile(intent.getStringExtra("username"), intent.getStringExtra("password"));
 
-                TimeUnit.SECONDS.sleep(25);
 
 
 
 
 
-                stop();
+
+
 
             }catch (Exception e){
                 Log.i(Constants.LOG_TAG, "MYRUN Exception " + e.getMessage());

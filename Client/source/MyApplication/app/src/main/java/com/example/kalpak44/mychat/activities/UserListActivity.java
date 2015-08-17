@@ -2,6 +2,7 @@ package com.example.kalpak44.mychat.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,7 +16,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kalpak44.mychat.R;
+import com.example.kalpak44.mychat.constants.Constants;
 import com.example.kalpak44.mychat.models.User;
+import com.example.kalpak44.mychat.utils.MyService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,32 +29,101 @@ import java.util.List;
 public class UserListActivity extends Activity {
     private ListView usersListView;
     private List<User> userList;
+    private ArrayAdapter<User> adapter;
+
+    UserUpdater userlistUpdater;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_list_layout);
         usersListView = (ListView) findViewById(R.id.users);
 
-        initUserList();
+
+
+        userlistUpdater = new UserUpdater();
+        userlistUpdater.execute();
+        //initUserList();
         initUserListView();
         registerClickCallback();
+
+
     }
 
+
+    class UserUpdater extends AsyncTask<Void,Void,Void>{
+        @Override
+        protected void onPreExecute() {
+            userList = new ArrayList<User>();
+
+            super.onPreExecute();
+        }
+
+        private void setUserByUsername(String username,User user){
+            for(int i=0;i<userList.size();i++){
+                User current = userList.get(i);
+                if(current.getUsername().equals(username)){
+                    userList.set(i,user);
+                }
+            }
+        }
+
+        @Override
+        protected Void doInBackground(Void... values) {
+            try {
+                publishProgress();
+                Thread.sleep(2000);
+                userList.add(new User("User 1", R.drawable.user_0, 0));
+                userList.add(new User("User 2", R.drawable.user_0, 1));
+                userList.add(new User("User 3", R.drawable.user_0, 0));
+                userList.add(new User("User 4", R.drawable.user_0, 0));
+                publishProgress();
+                Thread.sleep(2000);
+                userList.add(new User("User 5", R.drawable.user_0, 0));
+                publishProgress();
+                Thread.sleep(2000);
+                setUserByUsername("User 3", new User("User 3", R.drawable.user_0, 22));
+                publishProgress();
+                Thread.sleep(2000);
+                userList.remove(4);
+                publishProgress();
+                Thread.sleep(2000);
+                userList.add(new User("User 6", R.drawable.user_0, 0));
+                userList.add(new User("User 7", R.drawable.user_0, 1));
+                publishProgress();
+
+
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            adapter.notifyDataSetChanged();
+            super.onProgressUpdate(values);
+        }
+    }
+
+
     private void registerClickCallback() {
-        usersListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+        usersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
                 User userClicked = userList.get(position);
-                String message = "Position "+position;
+                String message = "Position " + position;
                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
                 //Intent intent = new Intent(getApplicationContext(), MessageRoomActivity.class);
-                startActivity(new Intent(getApplicationContext(),MessageRoomActivity.class));
+                startActivity(new Intent(getApplicationContext(), MessageRoomActivity.class));
             }
         });
     }
 
     private void initUserListView() {
-        ArrayAdapter<User> adapter = new MyListAdapter();
+        adapter = new MyListAdapter();
         usersListView = (ListView) findViewById(R.id.users);
         usersListView.setAdapter(adapter);
     }
@@ -60,9 +132,9 @@ public class UserListActivity extends Activity {
         this.userList = new ArrayList<User>();
         userList.add(new User("User 1",R.drawable.user_0,0));
         userList.add(new User("User 2",R.drawable.user_0,1));
-        userList.add(new User("User 3",R.drawable.user_0,0));
-        userList.add(new User("User 4",R.drawable.user_0,8));
-        userList.add(new User("User 5",R.drawable.user_0,6));
+        userList.add(new User("User 3", R.drawable.user_0, 0));
+        userList.add(new User("User 4", R.drawable.user_0, 8));
+        userList.add(new User("User 5", R.drawable.user_0, 6));
     }
 
 
@@ -83,6 +155,7 @@ public class UserListActivity extends Activity {
             User currentUser = userList.get(position);
 
             //fill the view
+            //userTextAvatar
             ImageView userImageView = (ImageView)itemView.findViewById(R.id.userImageView);
             userImageView.setImageResource(currentUser.getPict_id());
 
@@ -90,16 +163,33 @@ public class UserListActivity extends Activity {
             TextView userTextView = (TextView) itemView.findViewById(R.id.userTextView);
             userTextView.setText(currentUser.getUsername());
 
+            ImageView imageViewMsg = (ImageView)itemView.findViewById(R.id.imageViewMsg);
+            imageViewMsg.setVisibility(currentUser.getCount_msg()>0?View.VISIBLE:View.INVISIBLE);
+            //imageViewMsg.setVisibility(View.INVISIBLE);
+
             return itemView;
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        logout();
+        startActivity(new Intent(getApplicationContext(),MainActivity.class));
+        super.onBackPressed();
+    }
+
+    private void logout() {
+        Intent intent = new Intent(getApplicationContext(), MyService.class)
+                .putExtra(Constants.PARAM_TASK, Constants.PARAM_LOGOUT);
+        // стартуем сервис
+        startService(intent);
+    }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_userlist, menu);
         return true;
     }
 
@@ -114,7 +204,11 @@ public class UserListActivity extends Activity {
         if (id == R.id.action_settings) {
             return true;
         }
-
+        if (id == R.id.action_logout) {
+            logout();
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 }

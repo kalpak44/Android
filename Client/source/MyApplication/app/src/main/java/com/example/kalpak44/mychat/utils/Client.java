@@ -25,7 +25,6 @@ public class Client implements Runnable {
     private String connectionStatus;
 
 
-
     public Client(){
         connectionStatus = Constants.NOT_CONNECTED;
     }
@@ -87,29 +86,18 @@ public class Client implements Runnable {
                 in = new BufferedReader(new InputStreamReader(
                         socket.getInputStream()));
 
-
-
-
+                // update connection status
                 connectionStatus = Constants.STATUS_SUCCESS;
                 /*
                 serverMessage = in.readLine();
                 mMessageListener.messageReceived(serverMessage);
 
                 */
-                while (mRun) {
-                    //serverMessage = in.readLine();
-                    /*
-
-                    if (serverMessage != null && mMessageListener != null) {
-                        // call the method messageReceived from MyActivity class
-                        mMessageListener.messageReceived(serverMessage);
-                    }
-                    */
-
-                }
+                while (mRun) {}
 
 
             } catch (Exception e) {
+                // update connection status
                 connectionStatus = e.getMessage();
             } finally {
                 // the socket must be closed. It is not possible to reconnect to
@@ -120,6 +108,7 @@ public class Client implements Runnable {
             }
 
         } catch (Exception e) {
+            // update connection status
             connectionStatus = e.getMessage();
         }
 
