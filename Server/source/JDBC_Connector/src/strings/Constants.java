@@ -21,6 +21,14 @@ public class Constants {
 	public static final String UHELP  = "GETMSG  - get JSON Object with users and LinkedList Array message list\n"
 			+ "SENDMSG    - send new messages (load JSON Object with \"to\" and \"text\" propierties)\n"
 			+ "USERLIST   - get JSON Array of all clients\n"
-			+ "LOGOUT     - return main menu";			;
-
+			+ "LOGOUT     - return main menu";
+	public static final String DB_URL  = "dburl";
+	public static final String DB_USER = "dbuser";
+	public static final String DB_PASS = "dbpassword";
+	public static final String S_PORT  = "port";
+	public static final String THREADS = "threads";
+	public static final String FROM = "from";
+	public static final String MESSAGE = "message";
+	public static final String DATE_TIME = "date_time";
+	
 }

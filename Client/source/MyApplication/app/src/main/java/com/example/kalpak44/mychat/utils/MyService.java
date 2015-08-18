@@ -114,6 +114,14 @@ public class MyService extends Service {
                 }if (task.equals(Constants.PARAM_LOGOUT)){
                     sendMessage(Constants.PARAM_LOGOUT);
                     Log.i(Constants.LOG_TAG, "TCP MSG " + getMessage());
+                }if(task.equals(Constants.PARAM_USERLIST)){
+                    Log.i(Constants.LOG_TAG,getMessage());
+                    sendMessage(Constants.PARAM_USERLIST);
+                    String recv = getMessage();
+                    Log.i(Constants.LOG_TAG, "TCP MSG " + recv);
+                    Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
+                    resultIntent.putExtra(Constants.PARAM_USERLIST_RESULT, recv);
+                    sendBroadcast(resultIntent);
                 }
 
 

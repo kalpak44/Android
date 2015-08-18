@@ -5,6 +5,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import strings.Config;
+import strings.Constants;
+import strings.Strings;
 
 import java.util.Date;
 import java.text.DateFormat;
@@ -16,14 +18,11 @@ public class DBTool {
 	private static Statement stmt = null;
 	private static ResultSet rs = null;
 	
-	public DBTool(){
-		try{
+	public DBTool(String dbUrl,String dbUser,String dbPassword) throws ClassNotFoundException, SQLException{
 			// Register JDBC driver
-			Class.forName(Config.JDBC_DRIVER);
-			conn  = DriverManager.getConnection(Config.DB_URL,Config.USER,Config.PASS);			
-		}catch(Exception ex){
-			System.out.println(ex.getMessage());
-		}
+		Class.forName(Config.JDBC_DRIVER);
+		conn  = DriverManager.getConnection(dbUrl,dbUser,dbPassword);			
+
 	}
 	
 	
@@ -42,7 +41,7 @@ public class DBTool {
 			preparedStatement.setString(1, username);
 			rs = preparedStatement.executeQuery();
 			rs.next();
-			return rs.getString("password");
+			return rs.getString(Constants.PASSWORD);
 
 		}catch(Exception ex){
 			System.out.println("exept get pass by username method");
@@ -59,8 +58,8 @@ public class DBTool {
 	public boolean  createNewClient(JSONObject client){
 		try{
 			stmt = conn.createStatement();
-			String username = (String) client.get("username");
-			String password = (String) client.get("password");
+			String username = (String) client.get(Constants.USERNAME);
+			String password = (String) client.get(Constants.PASSWORD);
 			String avatar   = (String) client.get("avatar");
 			
 			if(this.getPass(username)!=null){
@@ -104,8 +103,8 @@ public class DBTool {
 
 			while(rs.next()){
 				int id = rs.getInt("id");
-				String from = rs.getString("from");
-				String message = rs.getString("message");
+				String from = rs.getString(Constants.FROM);
+				String message = rs.getString(Constants.MESSAGE);
 				String dateTime = rs.getString("date_time");
 				
 				msgbox.addMsg(from, message, dateTime);
@@ -141,34 +140,36 @@ public class DBTool {
 	
 	
 	@SuppressWarnings("unchecked")
-	public JSONArray getAllClients(){
+	public JSONArray getAllClientsWithCoundMsg(String username){
 		JSONArray result = new JSONArray();
 		try{
 			stmt = conn.createStatement();
 			
 			
-			String sql = "select `username` from clients";
-			String sql1 = "select clients.username, count(messages.id) as messages"
-					+ " from clients left join messages on clients.username = messages.to"
-					+ " where messages.is_readed = 0 group by username";
-			PreparedStatement preparedStatement = null;
-			preparedStatement = conn.prepareStatement(sql1);
+			String sql1 = "select clients.username, count(messages.id) as messages from clients left join messages on clients.username = messages.from and messages.to = ? and messages.is_readed = 0 group by username;";
+			PreparedStatement preparedStmt = conn.prepareStatement(sql1);
+			preparedStmt = conn.prepareStatement(sql1);
+			preparedStmt.setString(1, username);
 			
 			
-			rs = preparedStatement.executeQuery();
+			rs = preparedStmt.executeQuery();
 			
 			
 			result = new JSONArray();
 			while(rs.next()){
-				String username = rs.getString("username");
-				int messages  = rs.getInt("messages");
 				JSONObject json = new JSONObject();
-				json.put(username, messages);
-				result.add(json);
+				String currUsersrname = rs.getString(Constants.USERNAME);
+				int currMsgCount = rs.getInt("messages");
+				if(!currUsersrname.equals("")&&!currUsersrname.equals(username)){
+					json.put(currUsersrname, currMsgCount);
+					result.add(json);
+				}
+				
+				
 			}
 			
-			if (preparedStatement != null) {
-				preparedStatement.close();
+			if (preparedStmt != null) {
+				preparedStmt.close();
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -178,16 +179,15 @@ public class DBTool {
 	
 	public boolean  sendMsg(String from, String to, String msgText){
 		try{
-			System.out.println("Creating statement (sendMsg)...");
+
 			stmt = conn.createStatement();
 			System.out.println(msgText);
 
-			System.out.println("Creating PreparedStatement...");
 			String sql = "insert into `messages` (`from`, `to`, `message`, `date_time`) values (?, ?, ?, ?)";
 			PreparedStatement preparedStatement = null;
 			preparedStatement = conn.prepareStatement(sql);
 			
-			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			DateFormat dateFormat = new SimpleDateFormat(Config.DATE_TIME_FORMAT);
 			Date date = new Date();
 			
 
@@ -197,9 +197,8 @@ public class DBTool {
 			preparedStatement.setString(4, dateFormat.format(date));
 			
 			
-			System.out.println("execute insert SQL stetement...");
 			preparedStatement.executeUpdate();
-			System.out.println("sended...");
+			System.out.println(Strings.MSG_SENDED);
 			
 			if (preparedStatement != null) {
 				preparedStatement.close();
@@ -224,7 +223,7 @@ public class DBTool {
 	    }catch(SQLException se){
 	    	se.printStackTrace();
 	    }//end try
-	    System.out.println("Goodbye!");
+	    System.out.println(Strings.BYE);
 	}
 
 }

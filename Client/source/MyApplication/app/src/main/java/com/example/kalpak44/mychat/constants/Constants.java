@@ -13,6 +13,8 @@ public class Constants {
     public final static String PARAM_LOGOUT = "LOGOUT";
     public final static String PARAM_AUTH = "AUTH";
     public final static String PARAM_REG = "REG";
+    public final static String PARAM_USERLIST = "USERLIST";
+
     public final static String STATUS_SUCCESS = "SUCCESS";
     public final static String USERNAME = "username";
     public final static String PASSWORD = "password";
@@ -23,6 +25,8 @@ public class Constants {
 
     public final static String PARAM_CONNECT = "connection";
     public final static String PARAM_CONNECTION_RESULT = "connection result";
+    public final static String PARAM_USERLIST_RESULT = "userlist result";
+
     public final static String NOT_CONNECTED = "not connected";
 
 }

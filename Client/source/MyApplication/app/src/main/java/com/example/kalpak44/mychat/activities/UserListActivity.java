@@ -1,9 +1,13 @@
 package com.example.kalpak44.mychat.activities;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,10 +21,16 @@ import android.widget.Toast;
 
 import com.example.kalpak44.mychat.R;
 import com.example.kalpak44.mychat.constants.Constants;
+import com.example.kalpak44.mychat.constants.Strings;
 import com.example.kalpak44.mychat.models.User;
 import com.example.kalpak44.mychat.utils.MyService;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -32,6 +42,7 @@ public class UserListActivity extends Activity {
     private ArrayAdapter<User> adapter;
 
     UserUpdater userlistUpdater;
+    BroadcastReceiver br1,b2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,11 +79,89 @@ public class UserListActivity extends Activity {
             }
         }
 
+
         @Override
         protected Void doInBackground(Void... values) {
             try {
-                publishProgress();
-                Thread.sleep(2000);
+
+
+                while(true){
+
+                    br1 = new BroadcastReceiver(){
+                        @Override
+                        public void onReceive(Context context, Intent intent) {
+                            String recv = intent.getStringExtra(Constants.PARAM_USERLIST_RESULT);
+
+                            if(recv != null){
+                                Log.i(Constants.LOG_TAG, "onReceive: JSON string = " + recv);
+                                Log.i(Constants.LOG_TAG, "parsing...");
+
+
+                                try {
+                                    JSONArray jsonArray = new JSONArray(recv);
+                                    userList.clear();
+                                    for(int i=0;i<jsonArray.length();i++){
+                                        JSONObject user = (JSONObject)jsonArray.get(i);
+                                        Iterator<String> keys = user.keys();
+                                        String username = keys.next();
+
+                                        int msgCount = user.optInt(username);
+                                        userList.add(new User(username, R.drawable.user_0, msgCount));
+
+
+                                    }
+
+                                } catch (JSONException e) {
+                                    try {
+                                        if (br1 != null) {
+                                            unregisterReceiver(br1);
+                                        }
+                                    } catch (IllegalArgumentException ex) {
+                                        br1 = null;
+                                    }
+                                }
+
+                            }else{
+                                try {
+                                    if (br1 != null) {
+                                        unregisterReceiver(br1);
+                                    }
+                                } catch (IllegalArgumentException e) {
+                                    br1 = null;
+                                }
+                            }
+
+                        }
+                    };
+                    registerReceiver(br1, new IntentFilter(Constants.BROADCAST_ACTION));
+
+
+
+                    Intent intent = new Intent(getApplicationContext(), MyService.class)
+                            .putExtra(Constants.PARAM_TASK, Constants.PARAM_USERLIST);
+                    // стартуем сервис
+                    startService(intent);
+                    publishProgress();
+                    Thread.sleep(2000);
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                /*
+
+
                 userList.add(new User("User 1", R.drawable.user_0, 0));
                 userList.add(new User("User 2", R.drawable.user_0, 1));
                 userList.add(new User("User 3", R.drawable.user_0, 0));
@@ -91,6 +180,7 @@ public class UserListActivity extends Activity {
                 userList.add(new User("User 6", R.drawable.user_0, 0));
                 userList.add(new User("User 7", R.drawable.user_0, 1));
                 publishProgress();
+                */
 
 
 
@@ -174,6 +264,7 @@ public class UserListActivity extends Activity {
     @Override
     public void onBackPressed() {
         logout();
+        userlistUpdater.cancel(true);
         startActivity(new Intent(getApplicationContext(),MainActivity.class));
         super.onBackPressed();
     }
@@ -185,6 +276,11 @@ public class UserListActivity extends Activity {
         startService(intent);
     }
 
+    @Override
+    protected void onDestroy() {
+        userlistUpdater.cancel(true);
+        super.onDestroy();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -209,6 +305,11 @@ public class UserListActivity extends Activity {
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
             return true;
         }
+        if (id == R.id.action_test) {
+            return true;
+        }
+
+
         return super.onOptionsItemSelected(item);
     }
 }
