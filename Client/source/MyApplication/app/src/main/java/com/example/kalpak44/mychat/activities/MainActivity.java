@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
 
 
 
-    BroadcastReceiver br1,br2, br3;
+    BroadcastReceiver br1,br2;
     SharedPreferences sPref;
 
     @Override
@@ -126,22 +126,22 @@ public class MainActivity extends Activity {
                                     } else {
                                         Toast.makeText(getApplicationContext(), Strings.AUTH_FAIL, Toast.LENGTH_SHORT).show();
                                     }
-                                } else {
-                                    try {
-                                        if (br2 != null) {
-                                            unregisterReceiver(br2);
-                                        }
-                                    } catch (IllegalArgumentException e) {
-                                        br2 = null;
-                                    }
                                 }
+                                try {
+                                    if (br2 != null) {
+                                        unregisterReceiver(br2);
+                                    }
+                                } catch (IllegalArgumentException e) {
+                                    br2 = null;
+                                }
+
 
                             }
                         };
 
                         // регистрируем (включаем) BroadcastReceiver
                         registerReceiver(br2, new IntentFilter(Constants.BROADCAST_ACTION));
-                        Log.i(Constants.LOG_TAG, "onPause: param register br2");
+                        Log.i(Constants.LOG_TAG, "initConnection: param register br2");
 
 
                     } else {
@@ -150,16 +150,26 @@ public class MainActivity extends Activity {
                                 .putExtra(Constants.PARAM_TASK, Constants.PARAM_DISCONNECT));
                         MenuItem mi = menu.findItem(R.id.action_disconnect);
                         mi.setTitle("Connect");
-                    }
-                }else{
-                    try {
-                        if (br1 != null) {
-                            unregisterReceiver(br1);
+                        try {
+                            if (br2 != null) {
+                                unregisterReceiver(br2);
+                            }
+                        } catch (IllegalArgumentException e) {
+                            br2 = null;
                         }
-                    } catch (IllegalArgumentException e) {
-                        br1 = null;
                     }
+
                 }
+
+                try {
+                    if (br1 != null) {
+                        unregisterReceiver(br1);
+                    }
+                } catch (IllegalArgumentException e) {
+                    br1 = null;
+                }
+
+
             }
         };
 
@@ -175,55 +185,16 @@ public class MainActivity extends Activity {
 
 
 
-    @Override
-    protected void onPause() {
-        Log.i(Constants.LOG_TAG, "onPause: param unregister BroadcastReceivers");
-
-        try {
-            if (br1 != null) {
-                Log.i(Constants.LOG_TAG, "onPause: unregister b1");
-                unregisterReceiver(br1);
-            }
-            if (br2 != null) {
-                Log.i(Constants.LOG_TAG, "onPause: unregister b2");
-                unregisterReceiver(br2);
-            }
-            if (br3 != null) {
-                Log.i(Constants.LOG_TAG, "onPause: unregister b2");
-                unregisterReceiver(br2);
-            }
-
-        } catch (IllegalArgumentException e) {
-            br1 = null;
-            br2 = null;
-            br3 = null;
-        }
-
-
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        if(MyService.is_authorized == true){
-            Log.i(Constants.LOG_TAG, "onResume");
-        }
-        super.onResume();
-    }
-
     public void goToRegister(View view){
         Intent intent = new Intent(this, RegistrationActivity.class);
         startActivity(intent);
     }
 
 
-
-
-
-
-
-
-
+    @Override
+    public void onBackPressed() {
+        return;
+    }
 
 
 

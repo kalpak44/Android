@@ -41,7 +41,7 @@ public class MyService extends Service {
             new Thread(mr).start();
         }
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override

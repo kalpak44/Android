@@ -42,7 +42,8 @@ public class UserListActivity extends Activity {
     private ArrayAdapter<User> adapter;
 
     UserUpdater userlistUpdater;
-    BroadcastReceiver br1,b2;
+    BroadcastReceiver br1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +95,7 @@ public class UserListActivity extends Activity {
 
                             if(recv != null){
                                 Log.i(Constants.LOG_TAG, "onReceive: JSON string = " + recv);
-                                Log.i(Constants.LOG_TAG, "parsing...");
+
 
 
                                 try {
@@ -107,8 +108,16 @@ public class UserListActivity extends Activity {
 
                                         int msgCount = user.optInt(username);
                                         userList.add(new User(username, R.drawable.user_0, msgCount));
+                                    }
+                                    publishProgress();
 
 
+                                    try {
+                                        if (br1 != null) {
+                                            unregisterReceiver(br1);
+                                        }
+                                    } catch (IllegalArgumentException ex) {
+                                        br1 = null;
                                     }
 
                                 } catch (JSONException e) {
@@ -121,14 +130,6 @@ public class UserListActivity extends Activity {
                                     }
                                 }
 
-                            }else{
-                                try {
-                                    if (br1 != null) {
-                                        unregisterReceiver(br1);
-                                    }
-                                } catch (IllegalArgumentException e) {
-                                    br1 = null;
-                                }
                             }
 
                         }
@@ -141,8 +142,7 @@ public class UserListActivity extends Activity {
                             .putExtra(Constants.PARAM_TASK, Constants.PARAM_USERLIST);
                     // стартуем сервис
                     startService(intent);
-                    publishProgress();
-                    Thread.sleep(2000);
+                    Thread.sleep(10000);
                 }
 
 
@@ -153,39 +153,7 @@ public class UserListActivity extends Activity {
 
 
 
-
-
-
-
-
-
-                /*
-
-
-                userList.add(new User("User 1", R.drawable.user_0, 0));
-                userList.add(new User("User 2", R.drawable.user_0, 1));
-                userList.add(new User("User 3", R.drawable.user_0, 0));
-                userList.add(new User("User 4", R.drawable.user_0, 0));
-                publishProgress();
-                Thread.sleep(2000);
-                userList.add(new User("User 5", R.drawable.user_0, 0));
-                publishProgress();
-                Thread.sleep(2000);
-                setUserByUsername("User 3", new User("User 3", R.drawable.user_0, 22));
-                publishProgress();
-                Thread.sleep(2000);
-                userList.remove(4);
-                publishProgress();
-                Thread.sleep(2000);
-                userList.add(new User("User 6", R.drawable.user_0, 0));
-                userList.add(new User("User 7", R.drawable.user_0, 1));
-                publishProgress();
-                */
-
-
-
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
 
             return null;
@@ -217,16 +185,6 @@ public class UserListActivity extends Activity {
         usersListView = (ListView) findViewById(R.id.users);
         usersListView.setAdapter(adapter);
     }
-
-    private void initUserList(){
-        this.userList = new ArrayList<User>();
-        userList.add(new User("User 1",R.drawable.user_0,0));
-        userList.add(new User("User 2",R.drawable.user_0,1));
-        userList.add(new User("User 3", R.drawable.user_0, 0));
-        userList.add(new User("User 4", R.drawable.user_0, 8));
-        userList.add(new User("User 5", R.drawable.user_0, 6));
-    }
-
 
     private class MyListAdapter extends ArrayAdapter<User>{
 
@@ -263,10 +221,7 @@ public class UserListActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        logout();
-        userlistUpdater.cancel(true);
-        startActivity(new Intent(getApplicationContext(),MainActivity.class));
-        super.onBackPressed();
+        return;
     }
 
     private void logout() {
@@ -280,6 +235,11 @@ public class UserListActivity extends Activity {
     protected void onDestroy() {
         userlistUpdater.cancel(true);
         super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     @Override
