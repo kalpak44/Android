@@ -122,6 +122,21 @@ public class MyService extends Service {
                     Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
                     resultIntent.putExtra(Constants.PARAM_USERLIST_RESULT, recv);
                     sendBroadcast(resultIntent);
+                }if(task.equals(Constants.PARAM_SENDMSG)){
+                    Log.i(Constants.LOG_TAG,getMessage());
+                    sendMessage(Constants.PARAM_SENDMSG);
+                    Log.i(Constants.LOG_TAG,getMessage());
+                    JSONObject msg = new JSONObject();
+                    msg.putOpt(Constants.TO, intent.getStringExtra(Constants.TO));
+                    msg.putOpt(Constants.MSG_TEXT, intent.getStringExtra(Constants.MSG_TEXT));
+                    sendMessage(msg.toString());
+
+                    String recv = getMessage();
+                    Log.i(Constants.LOG_TAG, "TCP MSG " + recv);
+                    Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
+                    resultIntent.putExtra(Constants.PARAM_SENDING_RESULT, recv);
+                    sendBroadcast(resultIntent);
+
                 }
 
 

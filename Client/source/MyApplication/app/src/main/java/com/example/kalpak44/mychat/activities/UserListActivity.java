@@ -41,7 +41,7 @@ public class UserListActivity extends Activity {
     private List<User> userList;
     private ArrayAdapter<User> adapter;
 
-    UserUpdater userlistUpdater;
+    UserUpdaterTask userListUpdater;
     BroadcastReceiver br1;
 
 
@@ -52,9 +52,13 @@ public class UserListActivity extends Activity {
         usersListView = (ListView) findViewById(R.id.users);
 
 
+        userListUpdater = (UserUpdaterTask) getLastNonConfigurationInstance();
+        if(userListUpdater ==null){
+            userListUpdater = new UserUpdaterTask();
+            userListUpdater.execute();
+        }
 
-        userlistUpdater = new UserUpdater();
-        userlistUpdater.execute();
+
         //initUserList();
         initUserListView();
         registerClickCallback();
@@ -62,8 +66,12 @@ public class UserListActivity extends Activity {
 
     }
 
+    public Object onRetainNonConfigurationInstance(){
+        return userListUpdater;
+    }
 
-    class UserUpdater extends AsyncTask<Void,Void,Void>{
+
+    class UserUpdaterTask extends AsyncTask<Void,Void,Void>{
         @Override
         protected void onPreExecute() {
             userList = new ArrayList<User>();
@@ -71,14 +79,6 @@ public class UserListActivity extends Activity {
             super.onPreExecute();
         }
 
-        private void setUserByUsername(String username,User user){
-            for(int i=0;i<userList.size();i++){
-                User current = userList.get(i);
-                if(current.getUsername().equals(username)){
-                    userList.set(i,user);
-                }
-            }
-        }
 
 
         @Override
@@ -171,11 +171,9 @@ public class UserListActivity extends Activity {
         usersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
-                User userClicked = userList.get(position);
-                String message = "Position " + position;
-                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-                //Intent intent = new Intent(getApplicationContext(), MessageRoomActivity.class);
-                startActivity(new Intent(getApplicationContext(), MessageRoomActivity.class));
+                startActivity(new Intent(getApplicationContext(), MessageRoomActivity.class).putExtra(
+                        "receiver",userList.get(position).getUsername()
+                ));
             }
         });
     }
@@ -233,7 +231,7 @@ public class UserListActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        userlistUpdater.cancel(true);
+        userListUpdater.cancel(true);
         super.onDestroy();
     }
 

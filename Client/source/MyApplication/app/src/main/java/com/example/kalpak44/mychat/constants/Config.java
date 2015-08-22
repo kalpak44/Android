@@ -10,5 +10,6 @@ public class Config {
     public static final int CONNECTION_WAIT = 2000;
 
     public static final int USERLIST_UPDATE = 2000;
+    public static final String DB_NAME = "myDB";
 
 }
