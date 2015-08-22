@@ -89,29 +89,25 @@ public class DBTool {
 		return true;
 	}
 	
-	public JSONObject getMessagesFor(String username){
-		JSONObject result = null;
+	@SuppressWarnings("unchecked")
+	public JSONArray getMessages(String from, String to){
+		JSONArray result = null;
 		try{
 			stmt = conn.createStatement();
-			String sql = "select `id`,`from`,`message`, `date_time` from messages where is_readed = 0 and `to` = ?";
+			String sql = "select `id`,`from`,`message`, `date_time` from messages where is_readed = 0 and `to` = ? and `from` = ?";
 			PreparedStatement preparedStatement = null;
 			preparedStatement = conn.prepareStatement(sql);
-			preparedStatement.setString(1, username);
-
+			preparedStatement.setString(1, to);
+			preparedStatement.setString(2, from);
+			
 			rs = preparedStatement.executeQuery();
-			MessageBox msgbox = new MessageBox();
-
+			
+			result = new JSONArray();
 			while(rs.next()){
-				int id = rs.getInt("id");
-				String from = rs.getString(Constants.FROM);
-				String message = rs.getString(Constants.MESSAGE);
-				String dateTime = rs.getString("date_time");
-				
-				msgbox.addMsg(from, message, dateTime);
-				markMsgAsReaded(id);
-				
+				result.add(rs.getString(Constants.MESSAGE));
+				markMsgAsReaded(rs.getInt("id"));
 			}
-			result = msgbox.toJsonObject();
+
 			if (preparedStatement != null) {
 				preparedStatement.close();
 			}
@@ -216,12 +212,9 @@ public class DBTool {
 		try{
 			if(stmt!=null)
 				conn.close();
-		}catch(SQLException se){}// do nothing
-	    try{
 	    	if(conn!=null)
 	    		conn.close();
-	    }catch(SQLException se){
-	    	se.printStackTrace();
+	    }catch(Exception se){
 	    }//end try
 	    System.out.println(Strings.BYE);
 	}

@@ -2,6 +2,7 @@ import java.io.DataInputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -122,7 +123,11 @@ import utils.DBTool;
 			    case GETMSG:
 			    	try{
 		    			  System.out.println("getmsg");
-		    	    	  os.println(dbtools.getMessagesFor(username).toJSONString());
+		    			  os.println(Constants.IData);
+		    			  JSONObject inputJSON  = (JSONObject) new JSONParser().parse(is.readLine());
+		    			  String from = (String) inputJSON.get(Constants.FROM);
+		    			  JSONArray result = dbtools.getMessages(from,username);
+		    	    	  os.println(result.size()!=0?result.toJSONString():Constants.NOT_MSG);
 		    	    	  userMenu();
 		    	     }catch(Exception e){
 		    	    	  os.println(Constants.NOT_MSG);

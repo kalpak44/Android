@@ -18,7 +18,8 @@ public class Constants {
 	public static final String PASSWORD  = "password";
 	public static final String TO        = "to";
 	public static final String TEXT      = "text";
-	public static final String UHELP  = "GETMSG  - get JSON Object with users and LinkedList Array message list\n"
+	public static final String UHELP  = ""
+			+ "GETMSG     - load JSON Object with FROM key and return  JSONArray messages list\n"
 			+ "SENDMSG    - send new messages (load JSON Object with \"to\" and \"text\" propierties)\n"
 			+ "USERLIST   - get JSON Array of all clients\n"
 			+ "LOGOUT     - return main menu";

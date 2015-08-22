@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.net.ServerSocket;
 import strings.Config;
@@ -38,7 +39,6 @@ public class Main {
 	  
 	  
 	public static void main(String[] args) {
-		
 	    if (args.length < 1) {
 	      System.out.println(Strings.HELLO);
 	      
@@ -167,9 +167,9 @@ public class Main {
 	    
 	    
 
-	    /*
-	     * Server init
-	     */
+	    
+	    //Server init
+	    
 	    try {
 	      serverSocket = new ServerSocket(sPort);
 	      dbtools = new DBTool("jdbc:mysql://"+dbUrl, dbUser, dbPass);
@@ -177,6 +177,7 @@ public class Main {
 	      System.out.println(Strings.SERVER_INIT_FAILED);
 	      System.exit(0);
 	    }
+	    
 	    
 	    
 
@@ -205,6 +206,8 @@ public class Main {
 	      } catch (IOException e) {
 	        System.out.println(e.getMessage());
 	      }
+	      
+	      
 	    }
 
 
