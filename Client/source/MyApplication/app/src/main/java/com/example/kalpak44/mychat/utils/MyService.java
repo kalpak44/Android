@@ -137,6 +137,21 @@ public class MyService extends Service {
                     resultIntent.putExtra(Constants.PARAM_SENDING_RESULT, recv);
                     sendBroadcast(resultIntent);
 
+                }if(task.equals(Constants.PARAM_GETMSG)){
+                    Log.i(Constants.LOG_TAG, getMessage());
+                    Log.i(Constants.LOG_TAG, "TCP SEND: "+Constants.PARAM_GETMSG);
+                    sendMessage(Constants.PARAM_GETMSG);
+                    Log.i(Constants.LOG_TAG, getMessage());
+                    String receiver = intent.getStringExtra(Constants.RECEIVER);
+                    sendMessage(new JSONObject().put(Constants.FROM,receiver).toString());
+
+
+                    String recv = getMessage();
+                    Log.i(Constants.LOG_TAG, "TCP MSG " + recv);
+                    Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
+                    resultIntent.putExtra(Constants.PARAM_RECV_MSG_RESULT, recv);
+                    sendBroadcast(resultIntent);
+
                 }
 
 

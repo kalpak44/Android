@@ -15,6 +15,8 @@ public class Constants {
     public final static String PARAM_REG = "REG";
     public final static String PARAM_USERLIST = "USERLIST";
     public final static String PARAM_SENDMSG = "SENDMSG";
+    public final static String PARAM_GETMSG = "GETMSG";
+
 
 
     public final static String STATUS_SUCCESS = "SUCCESS";
@@ -22,16 +24,22 @@ public class Constants {
     public final static String PASSWORD = "password";
     public final static String SERVER_STATUS_AUTH_SUCCESS = "+AUTH SUCCESS";
     public final static String SERVER_STATUS_REG_SUCCESS = "+REGISTRATION SUCCESS";
+    public final static String SERVER_STATUS_NO_MSG = "-NO MESSAGES";
+
 
 
     public final static String PARAM_CONNECT = "connection";
     public final static String PARAM_CONNECTION_RESULT = "connection result";
     public final static String PARAM_USERLIST_RESULT = "userlist result";
     public final static String PARAM_SENDING_RESULT = "sending result";
+    public final static String PARAM_RECV_MSG_RESULT = "sending result";
 
     public final static String NOT_CONNECTED = "not connected";
     public final static String TO = "to";
+    public final static String FROM = "from";
     public final static String MSG_TEXT = "text";
+    public final static String RECEIVER = "receiver";
+
 
 
 

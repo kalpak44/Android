@@ -134,8 +134,6 @@ public class MainActivity extends Activity {
                                 } catch (IllegalArgumentException e) {
                                     br2 = null;
                                 }
-
-
                             }
                         };
 

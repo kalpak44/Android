@@ -1,11 +1,14 @@
 package com.example.kalpak44.mychat.activities;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -20,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kalpak44.mychat.R;
+import com.example.kalpak44.mychat.constants.Config;
 import com.example.kalpak44.mychat.constants.Constants;
 import com.example.kalpak44.mychat.constants.Strings;
 import com.example.kalpak44.mychat.models.User;
@@ -36,6 +40,8 @@ import java.util.List;
 /**
  * Created by kalpak44 on 15-7-29.
  */
+
+
 public class UserListActivity extends Activity {
     private ListView usersListView;
     private List<User> userList;
@@ -55,7 +61,20 @@ public class UserListActivity extends Activity {
         userListUpdater = (UserUpdaterTask) getLastNonConfigurationInstance();
         if(userListUpdater ==null){
             userListUpdater = new UserUpdaterTask();
-            userListUpdater.execute();
+            //startMyTask(userListUpdater);
+            try {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                    Log.i(Constants.LOG_TAG, "Async exec on thread pool");
+                    userListUpdater.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+                else {
+                    Log.i(Constants.LOG_TAG, "Async exec");
+                    userListUpdater.execute();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
         }
 
 
@@ -142,7 +161,7 @@ public class UserListActivity extends Activity {
                             .putExtra(Constants.PARAM_TASK, Constants.PARAM_USERLIST);
                     // стартуем сервис
                     startService(intent);
-                    Thread.sleep(10000);
+                    Thread.sleep(Config.USERLIST_UPDATE);
                 }
 
 
@@ -235,10 +254,8 @@ public class UserListActivity extends Activity {
         super.onDestroy();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -246,6 +263,9 @@ public class UserListActivity extends Activity {
         getMenuInflater().inflate(R.menu.menu_userlist, menu);
         return true;
     }
+
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -264,6 +284,7 @@ public class UserListActivity extends Activity {
             return true;
         }
         if (id == R.id.action_test) {
+            getApplicationContext().deleteDatabase(Config.DB_NAME);
             return true;
         }
 

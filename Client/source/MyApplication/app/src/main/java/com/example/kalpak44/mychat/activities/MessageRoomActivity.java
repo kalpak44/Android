@@ -1,5 +1,7 @@
 package com.example.kalpak44.mychat.activities;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -12,6 +14,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -35,8 +38,12 @@ import com.example.kalpak44.mychat.constants.Strings;
 import com.example.kalpak44.mychat.models.Message;
 import com.example.kalpak44.mychat.utils.MyService;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class MessageRoomActivity extends Activity {
     private ListView mList;
@@ -49,7 +56,7 @@ public class MessageRoomActivity extends Activity {
     private ChatArrayAdapter adp;
     private SQLiteDatabase db;
     private MSGTask msgTask;
-    private BroadcastReceiver br;
+    private BroadcastReceiver br, br2;
 
 
     @Override
@@ -102,9 +109,20 @@ public class MessageRoomActivity extends Activity {
 
 
         msgTask = (MSGTask) getLastNonConfigurationInstance();
-        if(msgTask ==null){
-            msgTask = new MSGTask();
-            msgTask.execute();
+        if(msgTask == null){
+            try {
+                msgTask = new MSGTask();
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                    Log.i(Constants.LOG_TAG, "Async exec on thread pool");
+                    msgTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+                else {
+                    Log.i(Constants.LOG_TAG, "Async exec");
+                    msgTask.execute();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
 
 
@@ -176,8 +194,10 @@ public class MessageRoomActivity extends Activity {
 
 
 
-            cv.put("message", messageText);
-            cv.put("receiver", receiver);
+            cv.put("msg_text", messageText);
+            cv.put("left", 1);
+            cv.put("room", receiver);
+
             // db,insert(table,if is null,CV object)
             long rowId = db.insert("messages",null,cv);
             Log.i(Constants.LOG_TAG, "row inserted - " + rowId);
@@ -196,21 +216,23 @@ public class MessageRoomActivity extends Activity {
 
 
 
-    private class MSGTask extends AsyncTask<Void,Void,Void>{
+    class MSGTask extends AsyncTask<Void,JSONArray,Void>{
+
+
         @Override
         protected void onPreExecute() {
+            Log.i(Constants.LOG_TAG, "onPreExecute");
 
-            Cursor c = db.rawQuery("select * from messages where receiver = ? or receiver = ?",new String[]{"I",receiver});
+            Cursor c = db.rawQuery("select * from messages where room = ?",new String[]{receiver});
 
             if(c.moveToFirst()){
 
-                int idColumnIndex = c.getColumnIndex("id");
-                int receiverColIndex = c.getColumnIndex("receiver");
-                int messageTextColIndex = c.getColumnIndex("message");
+                int leftColIndex = c.getColumnIndex("left");
+                int messageTextColIndex = c.getColumnIndex("msg_text");
 
 
                 do{
-                    adp.add(new Message(false, c.getString(messageTextColIndex)));
+                    adp.add(new Message(c.getInt(leftColIndex)!=1?true:false, c.getString(messageTextColIndex)));
                 }while(c.moveToNext());
 
 
@@ -222,21 +244,80 @@ public class MessageRoomActivity extends Activity {
             super.onPreExecute();
         }
 
+
+
         @Override
         protected Void doInBackground(Void... params) {
-            while (!isCancelled()){
+            while(true){
                 try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    if(isCancelled()){
+                        return null;
+                    }
+
+
+                    br2 = new BroadcastReceiver(){
+                        @Override
+                        public void onReceive(Context context, Intent intent) {
+                            String status = intent.getStringExtra(Constants.PARAM_RECV_MSG_RESULT);
+
+                            if(status != null){
+                                Log.i(Constants.LOG_TAG, "onReceive get msg: status = " + status);
+                                if(!status.equals(Constants.SERVER_STATUS_NO_MSG)){
+                                    //textViewInvalidData.setText("");
+                                    try {
+                                        publishProgress(new JSONArray(status));
+                                    } catch (JSONException e) {
+                                        Log.i(Constants.LOG_TAG, "onReceive not parse");
+                                    }
+                                }
+                            }
+                            try {
+                                if (br2 != null) {
+                                    unregisterReceiver(br2);
+                                }
+                            } catch (IllegalArgumentException e) {
+                                br2 = null;
+                            }
+
+
+                        }
+                    };
+
+                    // регистрируем (включаем) BroadcastReceiver
+                    registerReceiver(br2, new IntentFilter(Constants.BROADCAST_ACTION));
+
+                    // стартуем сервис
+                    startService(new Intent(getApplicationContext(), MyService.class)
+                            .putExtra(Constants.PARAM_TASK, Constants.PARAM_GETMSG)
+                            .putExtra(Constants.RECEIVER, receiver));
+                    Thread.sleep(Config.MSG_UPDATE);
+                } catch (Exception e) {
+
                 }
             }
-            return null;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+        protected void onProgressUpdate(JSONArray... array) {
+            Log.i(Constants.LOG_TAG, "onProgressUpdate");
+            for(int i=0;i<array[0].length();i++){
+                try {
+                    String message = array[0].getString(i);
+                    ContentValues cv = new ContentValues();
+                    cv.put("msg_text", message);
+                    cv.put("room", receiver);
+                    cv.put("left", 0);
+
+                    // db,insert(table,if is null,CV object)
+                    long rowId = db.insert("messages",null,cv);
+                    Log.i(Constants.LOG_TAG, "row inserted - " + rowId);
+
+                    adp.add(new Message(true, message));
+                } catch (JSONException e) {
+                    Log.i(Constants.LOG_TAG, "onProgressUpdate parser error");
+                }
+            }
+            super.onProgressUpdate(array);
         }
     }
 
@@ -303,8 +384,9 @@ public class MessageRoomActivity extends Activity {
             Log.i(Constants.LOG_TAG, "onCreate DB Helper: init tables");
             db.execSQL("create table messages (" +
                     "id integer primary key autoincrement," +
-                    "receiver text," +
-                    "message text"+
+                    "left integer," +
+                    "room text,"+
+                    "msg_text text"+
                             ");"
             );
 
@@ -316,21 +398,23 @@ public class MessageRoomActivity extends Activity {
         }
     }
 
+
     @Override
     protected void onPause() {
+        Log.i(Constants.LOG_TAG, "onPause");
+        msgTask.cancel(true);
         try {
             if (br != null) {
                 unregisterReceiver(br);
             }
+            if (br2 != null) {
+                unregisterReceiver(br2);
+            }
+
         } catch (IllegalArgumentException e) {
             br = null;
+            br2 = null;
         }
         super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        msgTask.cancel(true);
-        super.onDestroy();
     }
 }
