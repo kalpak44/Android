@@ -2,19 +2,14 @@ package com.example.kalpak44.mychat.utils;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
 
 
-import com.example.kalpak44.mychat.constants.Config;
+import com.example.kalpak44.mychat.constants.DefaultConfigs;
 import com.example.kalpak44.mychat.constants.Constants;
-import com.example.kalpak44.mychat.constants.Strings;
 
 import org.json.JSONObject;
-
-import java.util.concurrent.TimeUnit;
-
 
 
 /**
@@ -22,7 +17,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class MyService extends Service {
     Client client;
-    public static boolean is_authorized = false;
+
+    public static String username;
 
     @Override
     public void onCreate() {
@@ -71,7 +67,7 @@ public class MyService extends Service {
 
                 Log.i(Constants.LOG_TAG,"myRun");
                 if(task.equals(Constants.PARAM_CONNECT)){
-                    Thread.sleep(Config.CONNECTION_WAIT);
+                    Thread.sleep(DefaultConfigs.CONNECTION_WAIT);
                     Log.i(Constants.LOG_TAG, "connection status: " + client.getConnctionStatus());
                     Intent resultIntent = new Intent(Constants.BROADCAST_ACTION);
                     resultIntent.putExtra(Constants.PARAM_CONNECTION_RESULT, client.getConnctionStatus());
@@ -112,6 +108,7 @@ public class MyService extends Service {
                 }if (task.equals(Constants.PARAM_DISCONNECT)){
                     stop();
                 }if (task.equals(Constants.PARAM_LOGOUT)){
+                    username = null;
                     sendMessage(Constants.PARAM_LOGOUT);
                     Log.i(Constants.LOG_TAG, "TCP MSG " + getMessage());
                 }if(task.equals(Constants.PARAM_USERLIST)){
@@ -139,7 +136,7 @@ public class MyService extends Service {
 
                 }if(task.equals(Constants.PARAM_GETMSG)){
                     Log.i(Constants.LOG_TAG, getMessage());
-                    Log.i(Constants.LOG_TAG, "TCP SEND: "+Constants.PARAM_GETMSG);
+                    Log.i(Constants.LOG_TAG, "TCP SEND: "+ Constants.PARAM_GETMSG);
                     sendMessage(Constants.PARAM_GETMSG);
                     Log.i(Constants.LOG_TAG, getMessage());
                     String receiver = intent.getStringExtra(Constants.RECEIVER);
@@ -171,6 +168,7 @@ public class MyService extends Service {
         }
 
         public void stop(){
+            username = null;
             stopSelf(startId);
         }
 
@@ -179,7 +177,7 @@ public class MyService extends Service {
 
 
     public void connection(){
-        client = new Client();
+        client = new Client(getApplicationContext());
         new Thread(client).start();
     }
 

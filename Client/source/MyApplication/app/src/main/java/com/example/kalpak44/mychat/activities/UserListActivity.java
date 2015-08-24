@@ -1,7 +1,5 @@
 package com.example.kalpak44.mychat.activities;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -23,11 +21,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kalpak44.mychat.R;
-import com.example.kalpak44.mychat.constants.Config;
+import com.example.kalpak44.mychat.constants.DefaultConfigs;
 import com.example.kalpak44.mychat.constants.Constants;
-import com.example.kalpak44.mychat.constants.Strings;
+import com.example.kalpak44.mychat.constants.UIstrings;
 import com.example.kalpak44.mychat.models.User;
+import com.example.kalpak44.mychat.utils.MyChat;
 import com.example.kalpak44.mychat.utils.MyService;
+import com.example.kalpak44.mychat.utils.Settings;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,6 +46,7 @@ public class UserListActivity extends Activity {
     private ListView usersListView;
     private List<User> userList;
     private ArrayAdapter<User> adapter;
+    private Settings settings;
 
     UserUpdaterTask userListUpdater;
     BroadcastReceiver br1;
@@ -56,6 +57,8 @@ public class UserListActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_list_layout);
         usersListView = (ListView) findViewById(R.id.users);
+        MyChat app =(MyChat) getApplicationContext();
+        settings = app.getSettings();
 
 
         userListUpdater = (UserUpdaterTask) getLastNonConfigurationInstance();
@@ -106,6 +109,9 @@ public class UserListActivity extends Activity {
 
 
                 while(true){
+                    if(isCancelled()){
+                        return null;
+                    }
 
                     br1 = new BroadcastReceiver(){
                         @Override
@@ -161,7 +167,7 @@ public class UserListActivity extends Activity {
                             .putExtra(Constants.PARAM_TASK, Constants.PARAM_USERLIST);
                     // стартуем сервис
                     startService(intent);
-                    Thread.sleep(Config.USERLIST_UPDATE);
+                    Thread.sleep(settings.getUserListRefreshTime());
                 }
 
 
@@ -238,15 +244,11 @@ public class UserListActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        Toast.makeText(getApplicationContext(), UIstrings.USE_MENU, Toast.LENGTH_SHORT).show();
         return;
     }
 
-    private void logout() {
-        Intent intent = new Intent(getApplicationContext(), MyService.class)
-                .putExtra(Constants.PARAM_TASK, Constants.PARAM_LOGOUT);
-        // стартуем сервис
-        startService(intent);
-    }
+
 
     @Override
     protected void onDestroy() {
@@ -276,15 +278,25 @@ public class UserListActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            userListUpdater.cancel(true);
+            // стартуем сервис
+            startService(new Intent(getApplicationContext(), MyService.class)
+                    .putExtra(Constants.PARAM_TASK, Constants.PARAM_LOGOUT));
+            startActivity(new Intent(getApplicationContext(),ConfigsActivity.class));
             return true;
         }
         if (id == R.id.action_logout) {
-            logout();
+            userListUpdater.cancel(true);
+            // стартуем сервис
+            startService(new Intent(getApplicationContext(), MyService.class)
+                    .putExtra(Constants.PARAM_TASK, Constants.PARAM_LOGOUT));
+
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
             return true;
         }
-        if (id == R.id.action_test) {
-            getApplicationContext().deleteDatabase(Config.DB_NAME);
+        if (id == R.id.action_clearDb) {
+            getApplicationContext().deleteDatabase(DefaultConfigs.DB_NAME);
+            Toast.makeText(getApplicationContext(), UIstrings.CLEAR_DB, Toast.LENGTH_SHORT).show();
             return true;
         }
 

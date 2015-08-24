@@ -17,10 +17,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kalpak44.mychat.constants.Constants;
-import com.example.kalpak44.mychat.constants.Strings;
-import com.example.kalpak44.mychat.utils.Client;
+import com.example.kalpak44.mychat.constants.DefaultConfigs;
+import com.example.kalpak44.mychat.constants.UIstrings;
+import com.example.kalpak44.mychat.utils.MyChat;
 import com.example.kalpak44.mychat.utils.MyService;
 import com.example.kalpak44.mychat.R;
+import com.example.kalpak44.mychat.utils.Settings;
 
 
 public class MainActivity extends Activity {
@@ -31,11 +33,10 @@ public class MainActivity extends Activity {
     private Button loginButton;
     private Button goToRegButton;
     private Menu menu;
-
-
+    private Settings settings;
 
     BroadcastReceiver br1,br2;
-    SharedPreferences sPref;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +51,9 @@ public class MainActivity extends Activity {
         loginButton.setEnabled(false);
         goToRegButton.setEnabled(false);
 
+        MyChat app =(MyChat) getApplicationContext();
+        settings = app.getSettings();
+
 
 
 
@@ -58,9 +62,12 @@ public class MainActivity extends Activity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                textViewInvalidData.setText(Strings.WAIT);
+                textViewInvalidData.setText(UIstrings.WAIT);
                 String username = editUsername.getText().toString();
                 String password = editPassword.getText().toString();
+
+                authAccepltLoader();
+
 
 
                 // стартуем сервис
@@ -74,9 +81,10 @@ public class MainActivity extends Activity {
         });
 
 
-        //for test
-        editUsername.setText("admin");
-        editPassword.setText("qwerty123");
+
+
+
+
 
 
         startService(new Intent(getApplicationContext(), MyService.class));
@@ -112,34 +120,14 @@ public class MainActivity extends Activity {
                         unregisterReceiver(br1);
 
 
-                        br2 = new BroadcastReceiver() {
-                            @Override
-                            public void onReceive(Context context, Intent intent) {
-                                String auth_status = intent.getStringExtra(Constants.PARAM_AUTH_RESULT);
+                        if(settings.getAuthDataStatus()){
+                            editUsername.setText(settings.getUsername());
+                            editPassword.setText(settings.getPassword());
+                        }
 
-                                if (auth_status != null) {
-                                    Log.i(Constants.LOG_TAG, "onReceive auth: status = " + auth_status);
-                                    if (auth_status.equals(Constants.SERVER_STATUS_AUTH_SUCCESS)) {
-                                        //textViewInvalidData.setText("");
-                                        MyService.is_authorized = true;
-                                        startActivity(new Intent(getApplicationContext(), UserListActivity.class));
-                                    } else {
-                                        Toast.makeText(getApplicationContext(), Strings.AUTH_FAIL, Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                                try {
-                                    if (br2 != null) {
-                                        unregisterReceiver(br2);
-                                    }
-                                } catch (IllegalArgumentException e) {
-                                    br2 = null;
-                                }
-                            }
-                        };
 
-                        // регистрируем (включаем) BroadcastReceiver
-                        registerReceiver(br2, new IntentFilter(Constants.BROADCAST_ACTION));
-                        Log.i(Constants.LOG_TAG, "initConnection: param register br2");
+
+
 
 
                     } else {
@@ -148,13 +136,6 @@ public class MainActivity extends Activity {
                                 .putExtra(Constants.PARAM_TASK, Constants.PARAM_DISCONNECT));
                         MenuItem mi = menu.findItem(R.id.action_disconnect);
                         mi.setTitle("Connect");
-                        try {
-                            if (br2 != null) {
-                                unregisterReceiver(br2);
-                            }
-                        } catch (IllegalArgumentException e) {
-                            br2 = null;
-                        }
                     }
 
                 }
@@ -183,6 +164,47 @@ public class MainActivity extends Activity {
 
 
 
+    public void authAccepltLoader(){
+        br2 = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String auth_status = intent.getStringExtra(Constants.PARAM_AUTH_RESULT);
+
+                if (auth_status != null) {
+                    Log.i(Constants.LOG_TAG, "onReceive auth: status = " + auth_status);
+                    if (auth_status.equals(Constants.SERVER_STATUS_AUTH_SUCCESS)) {
+
+                        MyService.username = editUsername.getText().toString();
+
+                        if(settings.getAuthDataStatus()) {
+                            settings.setUsername(editUsername.getText().toString());
+                            settings.setPassword(editPassword.getText().toString());;
+                        }
+
+
+                        startActivity(new Intent(getApplicationContext(), UserListActivity.class));
+                    } else {
+                        Toast.makeText(getApplicationContext(), UIstrings.AUTH_FAIL, Toast.LENGTH_SHORT).show();
+                    }
+                }
+                textViewInvalidData.setText("");
+                try {
+                    if (br2 != null) {
+                        unregisterReceiver(br2);
+                    }
+                } catch (IllegalArgumentException e) {
+                    br2 = null;
+                }
+            }
+        };
+
+        // регистрируем (включаем) BroadcastReceiver
+        registerReceiver(br2, new IntentFilter(Constants.BROADCAST_ACTION));
+        Log.i(Constants.LOG_TAG, "initConnection: param register br2");
+    }
+
+
+
     public void goToRegister(View view){
         Intent intent = new Intent(this, RegistrationActivity.class);
         startActivity(intent);
@@ -191,8 +213,13 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        return;
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
+
+
 
 
 
@@ -215,6 +242,7 @@ public class MainActivity extends Activity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Log.i(Constants.LOG_TAG, "menu: settings");
+            startActivity(new Intent(getApplicationContext(),ConfigsActivity.class));
             return true;
         }
         if (id == R.id.action_disconnect) {
@@ -242,6 +270,11 @@ public class MainActivity extends Activity {
 
             }
             return true;
+        }if(id == R.id.action_exit){
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         }
 
 

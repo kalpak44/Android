@@ -15,8 +15,10 @@ import android.widget.Toast;
 
 import com.example.kalpak44.mychat.R;
 import com.example.kalpak44.mychat.constants.Constants;
-import com.example.kalpak44.mychat.constants.Strings;
+import com.example.kalpak44.mychat.constants.UIstrings;
+import com.example.kalpak44.mychat.utils.MyChat;
 import com.example.kalpak44.mychat.utils.MyService;
+import com.example.kalpak44.mychat.utils.Settings;
 
 /**
  * Created by kalpak44 on 15-7-29.
@@ -26,6 +28,7 @@ public class RegistrationActivity extends Activity {
     EditText username;
     EditText password1;
     EditText password2;
+    Settings settings;
 
 
     @Override
@@ -35,10 +38,8 @@ public class RegistrationActivity extends Activity {
         username = (EditText)findViewById(R.id.username);
         password1 = (EditText)findViewById(R.id.password1);
         password2 = (EditText)findViewById(R.id.password2);
-
-        username.setText("user");
-        password1.setText("12345");
-        password2.setText("12345");
+        MyChat app =(MyChat) getApplicationContext();
+        settings = app.getSettings();
 
 
 
@@ -52,20 +53,24 @@ public class RegistrationActivity extends Activity {
                     Log.i(Constants.LOG_TAG, "onReceive auth: status = " + status);
                     if(status.equals(Constants.SERVER_STATUS_REG_SUCCESS)){
                         //textViewInvalidData.setText("");
-                        unregisterReceiver(br3);
+                        MyService.username = username.getText().toString();
+                        if(settings.getAuthDataStatus()) {
+                            settings.setUsername(username.getText().toString());
+                            settings.setPassword(password2.getText().toString());;
+                        }
                         startActivity(new Intent(getApplicationContext(),UserListActivity.class));
                     }else{
-                        Toast.makeText(getApplicationContext(), Strings.REG_FAIL, Toast.LENGTH_SHORT).show();
-                    }
-                }else{
-                    try {
-                        if (br3 != null) {
-                            unregisterReceiver(br3);
-                        }
-                    } catch (IllegalArgumentException e) {
-                        br3 = null;
+                        Toast.makeText(getApplicationContext(), UIstrings.REG_FAIL, Toast.LENGTH_SHORT).show();
                     }
                 }
+                try {
+                    if (br3 != null) {
+                        unregisterReceiver(br3);
+                    }
+                } catch (IllegalArgumentException e) {
+                    br3 = null;
+                }
+
 
             }
         };
@@ -90,7 +95,7 @@ public class RegistrationActivity extends Activity {
             // стартуем сервис
             startService(intent);
         }else{
-            Toast.makeText(getApplicationContext(), Strings.PASS_MIS, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), UIstrings.PASS_MIS, Toast.LENGTH_LONG).show();
         }
 
     }

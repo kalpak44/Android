@@ -1,7 +1,5 @@
 package com.example.kalpak44.mychat.activities;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -29,14 +27,14 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.kalpak44.mychat.R;
-import com.example.kalpak44.mychat.constants.Config;
+import com.example.kalpak44.mychat.constants.DefaultConfigs;
 import com.example.kalpak44.mychat.constants.Constants;
-import com.example.kalpak44.mychat.constants.Strings;
 import com.example.kalpak44.mychat.models.Message;
+import com.example.kalpak44.mychat.utils.MyChat;
 import com.example.kalpak44.mychat.utils.MyService;
+import com.example.kalpak44.mychat.utils.Settings;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,14 +47,14 @@ public class MessageRoomActivity extends Activity {
     private ListView mList;
     private EditText msgTextEdit;
     private Button send_button;
-    private boolean left = false;
     private DBHelper dbHelper;
-    private  String receiver;
+    private String receiver, sendler;
     private ArrayList<Message> arrayList = new ArrayList<Message>();
     private ChatArrayAdapter adp;
     private SQLiteDatabase db;
     private MSGTask msgTask;
     private BroadcastReceiver br, br2;
+    private Settings settings;
 
 
     @Override
@@ -72,8 +70,12 @@ public class MessageRoomActivity extends Activity {
         if(i.getStringExtra("receiver") !=null){
             Log.i(Constants.LOG_TAG, "RECEIVER - "+i.getStringExtra("receiver"));
             receiver = i.getStringExtra("receiver");
+            if(MyService.username != null){
+                sendler = MyService.username;
+            }
         }
-
+        MyChat app =(MyChat) getApplicationContext();
+        settings = app.getSettings();
 
         send_button = (Button) findViewById(R.id.send_button);
         msgTextEdit = (EditText)findViewById(R.id.msgTextEdit);
@@ -197,6 +199,7 @@ public class MessageRoomActivity extends Activity {
             cv.put("msg_text", messageText);
             cv.put("left", 1);
             cv.put("room", receiver);
+            cv.put("logined", sendler);
 
             // db,insert(table,if is null,CV object)
             long rowId = db.insert("messages",null,cv);
@@ -223,7 +226,7 @@ public class MessageRoomActivity extends Activity {
         protected void onPreExecute() {
             Log.i(Constants.LOG_TAG, "onPreExecute");
 
-            Cursor c = db.rawQuery("select * from messages where room = ?",new String[]{receiver});
+            Cursor c = db.rawQuery("select * from messages where room = ? and logined = ?",new String[]{receiver, sendler});
 
             if(c.moveToFirst()){
 
@@ -290,7 +293,7 @@ public class MessageRoomActivity extends Activity {
                     startService(new Intent(getApplicationContext(), MyService.class)
                             .putExtra(Constants.PARAM_TASK, Constants.PARAM_GETMSG)
                             .putExtra(Constants.RECEIVER, receiver));
-                    Thread.sleep(Config.MSG_UPDATE);
+                    Thread.sleep(settings.getMsgListRefreshTime());
                 } catch (Exception e) {
 
                 }
@@ -307,6 +310,7 @@ public class MessageRoomActivity extends Activity {
                     cv.put("msg_text", message);
                     cv.put("room", receiver);
                     cv.put("left", 0);
+                    cv.put("logined",sendler);
 
                     // db,insert(table,if is null,CV object)
                     long rowId = db.insert("messages",null,cv);
@@ -376,7 +380,7 @@ public class MessageRoomActivity extends Activity {
     class DBHelper extends SQLiteOpenHelper {
         public DBHelper(Context context){
             //Context, DB name, Cursor, DB version
-            super(context, Config.DB_NAME,null,1);
+            super(context, DefaultConfigs.DB_NAME,null,1);
         }
 
         @Override
@@ -386,7 +390,8 @@ public class MessageRoomActivity extends Activity {
                     "id integer primary key autoincrement," +
                     "left integer," +
                     "room text,"+
-                    "msg_text text"+
+                    "msg_text text,"+
+                    "logined text"+
                             ");"
             );
 

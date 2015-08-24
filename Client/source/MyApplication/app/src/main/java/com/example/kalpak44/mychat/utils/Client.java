@@ -1,8 +1,9 @@
 package com.example.kalpak44.mychat.utils;
 
+import android.content.Context;
 import android.util.Log;
 
-import com.example.kalpak44.mychat.constants.Config;
+import com.example.kalpak44.mychat.constants.DefaultConfigs;
 import com.example.kalpak44.mychat.constants.Constants;
 
 import java.io.BufferedReader;
@@ -23,9 +24,12 @@ public class Client implements Runnable {
     private PrintWriter out;
     private BufferedReader in;
     private String connectionStatus;
+    private Settings settings;
 
 
-    public Client(){
+    public Client(Context context){
+        MyChat app = (MyChat) context;
+        settings = app.getSettings();
         connectionStatus = Constants.NOT_CONNECTED;
     }
 
@@ -69,12 +73,12 @@ public class Client implements Runnable {
 
 
             // here you must put your computer's IP address.
-            InetAddress serverAddr = InetAddress.getByName(Config.SERVERIP);
+            InetAddress serverAddr = InetAddress.getByName(settings.getServerIp());
             Log.i(Constants.LOG_TAG, serverAddr.toString());
             Log.i(Constants.LOG_TAG, "Server: Connecting...");
 
             // create a socket to make the connection with the server
-            Socket socket = new Socket(serverAddr, Config.SERVERPORT);
+            Socket socket = new Socket(serverAddr, settings.getServerPort());
 
             try {
 

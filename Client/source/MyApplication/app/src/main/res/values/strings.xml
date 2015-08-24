@@ -8,6 +8,8 @@
     <string name="action_disconnect">Disconnect</string>
     <string name="action_close_app">Exit</string>
     <string name="action_logout">Logout</string>
+    <string name="title_activity_configs">Configs</string>
+    <string name="clear">Clear history</string>
 
 
 </resources>
