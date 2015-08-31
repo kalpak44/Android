@@ -10,6 +10,8 @@
     <string name="action_logout">Logout</string>
     <string name="title_activity_configs">Configs</string>
     <string name="clear">Clear history</string>
-
-
+    <string name="all">All users</string>
+    <string name="fav">Add to favorites</string>
+    <string name="black_list">Add to black list</string>
+    <string name="return_back">Return back</string>
 </resources>

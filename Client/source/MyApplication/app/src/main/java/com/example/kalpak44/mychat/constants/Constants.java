@@ -51,6 +51,10 @@ public class Constants {
     public final static String MSG_REFRESH = "msgRefresh";
     public final static String U_REFRESH = "uRefresh";
     public final static String SERVER_PORT = "sPort";
+    public final static String FAV_LIST = "favlist";
+    public final static String BLACK_LIST = "blacklist";
+
+
 
 
 

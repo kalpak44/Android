@@ -7,14 +7,19 @@ public class User {
     private String username;
     private int pict_id;
     private int count_msg;
-    public User(String username, int pict_id, int count_msg){
+    private String status;
+    public User(String username, int pict_id, int count_msg, String status){
         super();
         this.username = username;
         this.pict_id = pict_id;
         this.count_msg = count_msg;
+        this.status = status;
     }
     public String getUsername(){
         return this.username;
+    }
+    public String getStatus(){
+        return this.status;
     }
     public int getPict_id(){
         return this.pict_id;
@@ -30,6 +35,9 @@ public class User {
     }
     public void setCount_msg(int count_msg){
         this.count_msg = count_msg;
+    }
+    public void setStatus(String status){
+        this.status = status;
     }
 
 }
