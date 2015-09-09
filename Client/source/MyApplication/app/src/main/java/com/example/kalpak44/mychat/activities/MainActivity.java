@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -23,6 +24,8 @@ import com.example.kalpak44.mychat.utils.MyChat;
 import com.example.kalpak44.mychat.utils.MyService;
 import com.example.kalpak44.mychat.R;
 import com.example.kalpak44.mychat.utils.Settings;
+
+import java.lang.reflect.Field;
 
 
 public class MainActivity extends Activity {
@@ -54,6 +57,7 @@ public class MainActivity extends Activity {
         MyChat app =(MyChat) getApplicationContext();
         settings = app.getSettings();
 
+        makeActionOverflowMenuShown();
 
 
 
@@ -93,6 +97,19 @@ public class MainActivity extends Activity {
 
     }
 
+    private void makeActionOverflowMenuShown() {
+        //devices with hardware menu button (e.g. Samsung Note) don't show action overflow menu
+        try {
+            ViewConfiguration config = ViewConfiguration.get(this);
+            Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+            if (menuKeyField != null) {
+                menuKeyField.setAccessible(true);
+                menuKeyField.setBoolean(config, false);
+            }
+        } catch (Exception e) {
+
+        }
+    }
 
     private void initConnection() {
         Intent intent = new Intent(getApplicationContext(), MyService.class)

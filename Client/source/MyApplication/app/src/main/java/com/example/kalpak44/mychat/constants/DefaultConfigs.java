@@ -9,8 +9,8 @@ public class DefaultConfigs {
 
     public static final int CONNECTION_WAIT = 2000;
 
-    public static final int USERLIST_UPDATE = 10000;
-    public static final int MSG_UPDATE = 5000;
+    public static final int USERLIST_UPDATE = 1000;
+    public static final int MSG_UPDATE = 1000;
 
     public static final String DB_NAME = "myDB";
     public static final String CONFIG_FILE = "config.pref";

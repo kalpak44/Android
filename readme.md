@@ -56,14 +56,15 @@ avatar VARCHAR(50)
 ```
 
 ```sql
-CREATE TABLE messages (
-id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-from VARCHAR(30) NOT NULL,
-to VARCHAR(30) NOT NULL,
-date_time VARCHAR(30) NOT NULL,
-is_readed INT(11) NOT NULL,
-message TEXT
-);
+CREATE TABLE IF NOT EXISTS `messages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `from` varchar(50) COLLATE utf8_bin NOT NULL,
+  `to` varchar(50) COLLATE utf8_bin NOT NULL,
+  `date_time` varchar(50) COLLATE utf8_bin NOT NULL,
+  `is_readed` int(11) DEFAULT '0',
+  `message` text COLLATE utf8_bin,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin AUTO_INCREMENT=15 ;
 ```
 
 ### Server

@@ -10,13 +10,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +56,7 @@ public class UserListActivity extends Activity {
     private Settings settings;
     private BlackList blackList;
     private FavList favList;
+    private boolean shawFavorites;
 
 
     UserUpdaterTask userListUpdater;
@@ -63,7 +67,8 @@ public class UserListActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_list_layout);
-        usersListView = (ListView) findViewById(R.id.users);
+
+        shawFavorites = false;
         MyChat app =(MyChat) getApplicationContext();
         settings = app.getSettings();
         blackList = app.getBlackList();
@@ -74,28 +79,31 @@ public class UserListActivity extends Activity {
         userListUpdater = (UserUpdaterTask) getLastNonConfigurationInstance();
         if(userListUpdater ==null){
             userListUpdater = new UserUpdaterTask();
-            try {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-                    Log.i(Constants.LOG_TAG, "Async exec on thread pool");
-                    userListUpdater.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
-                else {
-                    Log.i(Constants.LOG_TAG, "Async exec");
-                    userListUpdater.execute();
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+            startUpdater();
 
         }
 
 
-        //initUserList();
 
         initUserListView();
         registerClickCallback();
 
 
+    }
+
+    private void startUpdater() {
+        try {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                Log.i(Constants.LOG_TAG, "Async exec on thread pool");
+                userListUpdater.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+            else {
+                Log.i(Constants.LOG_TAG, "Async exec");
+                userListUpdater.execute();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public Object onRetainNonConfigurationInstance(){
@@ -107,7 +115,6 @@ public class UserListActivity extends Activity {
         @Override
         protected void onPreExecute() {
             userList = new ArrayList<User>();
-
             super.onPreExecute();
         }
 
@@ -140,15 +147,33 @@ public class UserListActivity extends Activity {
                                         JSONObject user = (JSONObject)jsonArray.get(i);
                                         Iterator<String> keys = user.keys();
                                         String username = keys.next();
-
                                         int msgCount = user.optInt(username);
 
 
-                                        if (!blackList.inList(username)){
-                                            userList.add(new User(username, R.drawable.user_0, msgCount,""));
-                                        }else{
-                                            userList.add(new User(username, R.drawable.user_0, 0,UIstrings.BLOCKED));
+                                        if(!MyService.username.equals(username)){
+                                            if(shawFavorites){
+                                                if (favList.inList(username)){
+                                                    userList.add(new User(username, R.drawable.user_0, msgCount,UIstrings.FAVORITE));
+                                                }
+                                            }else{
+                                                if (!blackList.inList(username)){
+                                                    if (favList.inList(username)){
+                                                        userList.add(new User(username, R.drawable.user_0, msgCount,UIstrings.FAVORITE));
+                                                    }else{
+                                                        userList.add(new User(username, R.drawable.user_0, msgCount,""));
+                                                    }
+                                                }else{
+                                                    userList.add(new User(username, R.drawable.user_0, 0,UIstrings.BLOCKED));
+                                                }
+                                            }
                                         }
+
+
+
+
+
+
+
 
 
                                     }
@@ -210,25 +235,29 @@ public class UserListActivity extends Activity {
     }
 
 
+
     private void registerClickCallback() {
         usersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
                 User adapterItem = adapter.getItem(position);
-                if(blackList.inList(adapterItem.getUsername())){
-                    Toast.makeText(getApplicationContext(), UIstrings.BLOCKED + " " +adapterItem.getUsername(), Toast.LENGTH_LONG).show();
-                }else{
+                if (blackList.inList(adapterItem.getUsername())) {
+                    Toast.makeText(getApplicationContext(), UIstrings.BLOCKED + " " + adapterItem.getUsername(), Toast.LENGTH_LONG).show();
+                } else {
                     startActivity(new Intent(getApplicationContext(), MessageRoomActivity.class).putExtra(
-                            "receiver",userList.get(position).getUsername()
+                            "receiver", userList.get(position).getUsername()
                     ));
                 }
             }
         });
     }
 
+
+
     private void initUserListView() {
         adapter = new MyListAdapter();
         usersListView = (ListView) findViewById(R.id.users);
+
         usersListView.setAdapter(adapter);
         registerForContextMenu(usersListView);
     }
@@ -241,13 +270,14 @@ public class UserListActivity extends Activity {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
         int position = info.position;
         User adapterItem = adapter.getItem(position);
+        menu.setHeaderTitle("Choose an option");
 
         if(adapterItem.getStatus().equals(UIstrings.BLOCKED)){
             menu.add(UIstrings.REMOVE_FROM_BLACKLIST);
             menu.add(UIstrings.BACK);
 
         }
-        if(adapterItem.getStatus().equals(UIstrings.FAVORITE)){
+        else if(adapterItem.getStatus().equals(UIstrings.FAVORITE)){
             menu.add(UIstrings.REMOVE_FROM_FAV);
             menu.add(UIstrings.BACK);
 
@@ -257,6 +287,10 @@ public class UserListActivity extends Activity {
             menu.add(UIstrings.ADD_TO_BLACKLIST);
             menu.add(UIstrings.BACK);
         }
+
+
+
+
 
     }
 
@@ -348,7 +382,7 @@ public class UserListActivity extends Activity {
 
             ImageView imageViewMsg = (ImageView)itemView.findViewById(R.id.imageViewMsg);
             imageViewMsg.setVisibility(currentUser.getCount_msg()>0?View.VISIBLE:View.INVISIBLE);
-            //imageViewMsg.setVisibility(View.INVISIBLE);
+            //imageViewMsg.setVisibility(View.VISIBLE);
 
             return itemView;
         }
@@ -411,8 +445,25 @@ public class UserListActivity extends Activity {
             Toast.makeText(getApplicationContext(), UIstrings.CLEAR_DB, Toast.LENGTH_SHORT).show();
             return true;
         }
+        if (id == R.id.favorite) {
+            String mittemTitle = item.getTitle().toString();
+            ImageView img= (ImageView) findViewById(R.id.imageView3);
+            if (mittemTitle.equals("Favorites")) {
+                shawFavorites = true;
+                item.setTitle("All users");
+                img.setImageResource(R.drawable.favorites);
+            }
+            if (mittemTitle.equals("All users")) {
+                shawFavorites = false;
+                item.setTitle("Favorites");
+                img.setImageResource(R.drawable.userlist);
+            }
+            return true;
+        }
 
 
         return super.onOptionsItemSelected(item);
     }
+
+
 }

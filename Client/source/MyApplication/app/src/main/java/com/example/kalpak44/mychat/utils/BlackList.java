@@ -35,15 +35,20 @@ public class BlackList {
     }
 
     public void removeFromList(String name){
+        JSONArray newArr = new JSONArray();
         for (int i = 0; i < json.length(); i++) {
+
             try {
                 String currient = json.getString(i);
-                if(currient.equals(name)){
-                    json.remove(i);
+                if(!currient.equals(name)){
+                    newArr.put(currient);
                 }
-            } catch (JSONException e) {}
-            setJSONArray();
+            } catch (JSONException e) {
+
+            }
         }
+        json = newArr;
+        setJSONArray();
     }
 
     public boolean inList(String name){

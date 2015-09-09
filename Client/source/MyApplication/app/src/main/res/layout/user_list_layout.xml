@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:weightSum="1">
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/bg">
 
     <ImageView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/imageView3"
         android:src="@drawable/userlist"
-        android:layout_weight="0.04" />
+        />
 
     <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:id="@+id/users"
+        android:scrollbars="vertical"
+        android:fastScrollEnabled="true"
         android:choiceMode="singleChoice"
         android:dividerHeight="0dp"
-        android:divider="@null" />
+        android:divider="@null"
+        android:fastScrollAlwaysVisible="false"
+        android:focusable="false"
+        android:scrollingCache="true" />
+
+
+
 
 </LinearLayout>

@@ -3,99 +3,122 @@
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
+    android:background="@drawable/bg">
 
-    <TextView
+
+
+    <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Username"
-        android:id="@+id/textView2"
-        android:textStyle="bold"
-        android:gravity="center_horizontal"
-        android:layout_below="@+id/textViewInvalidData"
-        android:layout_alignEnd="@+id/textView"
-        android:layout_marginTop="34dp" />
+        android:id="@+id/scrollView"
+        android:layout_alignParentTop="true">
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/username"
-        android:layout_below="@+id/textView2"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:singleLine="true"
-        android:textSize="24dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Password"
-        android:id="@+id/textView"
-        android:layout_below="@+id/username"
-        android:layout_centerHorizontal="true"
-        android:textStyle="bold" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:ems="10"
-        android:id="@+id/password1"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/username"
-        android:singleLine="true"
-        android:textSize="24dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Username"
+                android:id="@+id/textView2"
+                android:textStyle="bold"
+                android:gravity="center_horizontal"
+                android:layout_below="@+id/textViewInvalidData"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Log in"
-        android:id="@+id/loginButton"
-        android:layout_below="@+id/password1"
-        android:layout_alignEnd="@+id/password1"
-        android:lines="3"
-        android:textStyle="bold"
-        android:background="#496f8a"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/username"
+                android:layout_below="@+id/textView2"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:singleLine="true"
+                android:textSize="16dp"
+                android:minWidth="@dimen/activity_horizontal_margin" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="registration"
-        android:id="@+id/goToRegButton"
-        android:lines="3"
-        android:textStyle="bold"
-        android:onClick="goToRegister"
-        android:background="#bebebe"
-        android:layout_marginTop="10dp"
-        android:layout_below="@+id/loginButton"
-        android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/loginButton" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Password"
+                android:id="@+id/textView"
+                android:textStyle="bold"
+                android:layout_below="@+id/username"
+                android:layout_alignRight="@+id/textView2"
+                android:layout_alignEnd="@+id/textView2" />
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/imageView"
-        android:src="@drawable/authorization"
-        android:layout_centerHorizontal="true" />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:ems="10"
+                android:id="@+id/password1"
+                android:layout_below="@+id/textView"
+                android:layout_alignParentStart="true"
+                android:layout_alignEnd="@+id/username"
+                android:singleLine="true"
+                android:textSize="16dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/textViewInvalidData"
-        android:layout_below="@+id/imageView"
-        android:textColor="#db200000"
-        android:autoText="false"
-        android:text="connecting"
-        android:layout_alignEnd="@+id/username"
-        android:layout_alignParentStart="true"
-        android:gravity="center" />
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Log in"
+                android:id="@+id/loginButton"
+                android:layout_below="@+id/password1"
+                android:layout_alignEnd="@+id/password1"
+                android:lines="1"
+                android:textStyle="bold"
+                android:background="#496f8a"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:alpha="0.8" />
 
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="registration"
+                android:id="@+id/goToRegButton"
+                android:lines="1"
+                android:textStyle="bold"
+                android:onClick="goToRegister"
+                android:background="#bebebe"
+                android:textColor="#ffffff"
+                android:layout_marginTop="10dp"
+                android:layout_below="@+id/loginButton"
+                android:layout_alignParentStart="true"
+                android:layout_alignEnd="@+id/loginButton"
+                android:alpha="0.8" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageView"
+                android:src="@drawable/authorization"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/textViewInvalidData"
+                android:textColor="#db200000"
+                android:autoText="false"
+                android:text="connecting"
+                android:gravity="center"
+                android:layout_below="@+id/imageView"
+                android:layout_centerHorizontal="true" />
+
+
+        </RelativeLayout>
+    </ScrollView>
 </RelativeLayout>
